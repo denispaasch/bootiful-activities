@@ -37,7 +37,7 @@ public class ActivityRepository implements IActivityRepository {
     @Override
     public ActivityRecord saveExternal(ActivityRecord activity) {
         ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activity);
-        // Update if an activity with the external key already exists
+        // Update if an activity with the key already exists
         Optional<ActivityEntity> optExists = activityEntityRepository.findByExternalKey(activity.getExternalKey());
         optExists.ifPresent(a -> activityEntity.setId(a.getId()));
         return doSave(activityEntity);
@@ -46,6 +46,8 @@ public class ActivityRepository implements IActivityRepository {
     @Override
     public ActivityRecord save(ActivityRecord activity) {
         ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activity);
+        Optional<ActivityEntity> optExists = activityEntityRepository.findByAlternateKey(activity.getAlternateKey());
+        optExists.ifPresent(a -> activityEntity.setId(a.getId()));
         return doSave(activityEntity);
     }
 
