@@ -9,8 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.hateoas.IanaLinkRelations;
-import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,18 +19,18 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ActivityController.class)
 public class ActivityControllerTest {
 
     private static final String NEW_ACTIVITY_JSON = "/newActivity.json";
+    private static final String UPDATE_ACTIVITY_JSON = "/updateActivity.json";
 
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
@@ -45,7 +43,11 @@ public class ActivityControllerTest {
     private static final String URL_ACTIVITIES = "http://localhost/api/v1/activities/";
 
     private static final String AK_LEARN_HOW_THE_INTERNET_WORKS = "INTERNET";
-    public static final String URL_ACTIVITY_INTERNET = "http://localhost/api/v1/activities/INTERNET";
+    private static final String URL_ACTIVITY_INTERNET = "http://localhost/api/v1/activities/INTERNET";
+
+    private static final String URL_ACTIVITY_BIKE = "http://localhost/api/v1/activities/BIKE";
+
+    private static final String AK_BIKE = "BIKE";
 
     private static ActivityResponse createActivityResponse(String alternateKey, String action) {
         ActivityResponse activityResponse = new ActivityResponse();
@@ -96,7 +98,7 @@ public class ActivityControllerTest {
     }
 
     private String readFile(String file) {
-        try (InputStream inputStream = ActivityController.class.getResourceAsStream(NEW_ACTIVITY_JSON)) {
+        try (InputStream inputStream = ActivityController.class.getResourceAsStream(file)) {
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(e);
@@ -115,6 +117,7 @@ public class ActivityControllerTest {
                 .content(newActivityJson)
                 .characterEncoding(StandardCharsets.UTF_8))
                 // .andDo(print())
+                .andExpect(redirectedUrl(URL_ACTIVITY_INTERNET))
                 .andExpect(status().isCreated());
 
         ArgumentCaptor<ActivityRequest> activityRequestArgumentCaptor = ArgumentCaptor.forClass(ActivityRequest.class);
@@ -124,6 +127,25 @@ public class ActivityControllerTest {
         assertEquals("education", activityRequest.getType());
         assertEquals(1, activityRequest.getNoOfParticipants());
         assertEquals("https://www.google.de", activityRequest.getDetails());
+    }
+
+    @Test
+    public void testUpdateActivity() throws Exception {
+        String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
+        mockMvc.perform(put("/api/v1/activities/BIKE")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updateActivityJson)
+                .characterEncoding(StandardCharsets.UTF_8))
+                .andDo(print())
+                .andExpect(redirectedUrl(URL_ACTIVITY_BIKE))
+                .andExpect(status().isNoContent());
+        ArgumentCaptor<ActivityRequest> activityRequestArgumentCaptor = ArgumentCaptor.forClass(ActivityRequest.class);
+        verify(activityService).updateActivity(eq(AK_BIKE), activityRequestArgumentCaptor.capture());
+        ActivityRequest activityRequest = activityRequestArgumentCaptor.getValue();
+        assertEquals("Go get your bike", activityRequest.getAction());
+        assertEquals("outside", activityRequest.getType());
+        assertEquals(1, activityRequest.getNoOfParticipants());
+        assertEquals("", activityRequest.getDetails());
     }
 
     @Test
