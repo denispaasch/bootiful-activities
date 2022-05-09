@@ -28,7 +28,7 @@ class RootController {
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<RootResponse> getRoot() {
         RootResponse rootResponse = new RootResponse();
-        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities()).withRel("activities");
+        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(0, 5)).withRel("activities");
         rootResponse.add(activitiesLink);
         return ResponseEntity.ok(rootResponse);
     }

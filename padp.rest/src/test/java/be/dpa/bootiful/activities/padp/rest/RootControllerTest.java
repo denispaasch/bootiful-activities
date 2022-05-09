@@ -22,6 +22,6 @@ public class RootControllerTest {
         mvc.perform(get("/api/v1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))
-                .andExpect(jsonPath("$._links.activities.href", is("http://localhost/api/v1/activities")));
+                .andExpect(jsonPath("$._links.activities.href", is("http://localhost/api/v1/activities?page=0&size=5")));
     }
 }

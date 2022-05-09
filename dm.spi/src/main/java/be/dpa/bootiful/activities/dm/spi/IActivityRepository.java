@@ -1,5 +1,7 @@
 package be.dpa.bootiful.activities.dm.spi;
 
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +12,7 @@ import java.util.Optional;
  */
 public interface IActivityRepository {
 
-    List<ActivityRecord> getAll();
+    Page<ActivityRecord> getAll(int page, int size);
 
     Optional<ActivityRecord> getBy(String alternateKey);
 

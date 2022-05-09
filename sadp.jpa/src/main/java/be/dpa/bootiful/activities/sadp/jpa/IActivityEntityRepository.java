@@ -1,6 +1,8 @@
 package be.dpa.bootiful.activities.sadp.jpa;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -11,7 +13,9 @@ import java.util.Optional;
  * @author denis
  */
 @Repository
-public interface IActivityEntityRepository extends CrudRepository<ActivityEntity, Long> {
+public interface IActivityEntityRepository extends PagingAndSortingRepository<ActivityEntity, Long> {
+
+    Page<ActivityEntity> findByOrderByTypeAscActionAsc(Pageable pageable);
 
     Optional<ActivityEntity> findByExternalKey(String externalKey);
 

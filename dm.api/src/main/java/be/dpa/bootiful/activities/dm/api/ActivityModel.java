@@ -5,12 +5,12 @@ import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
 /**
- * Activity response.
+ * Activity model.
  *
  * @author denis
  */
 @Data
-public class ActivityResponse extends RepresentationModel<ActivityResponse> {
+public class ActivityModel extends RepresentationModel<ActivityModel> {
     /**
      * The unique identifier of the activity.
      */

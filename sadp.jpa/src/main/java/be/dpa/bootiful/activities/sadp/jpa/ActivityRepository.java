@@ -4,9 +4,11 @@ import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import be.dpa.bootiful.activities.dm.spi.IActivityRepository;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IActivityEntityMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,11 +24,11 @@ public class ActivityRepository implements IActivityRepository {
 
     private final IActivityEntityRepository activityEntityRepository;
 
-
     @Override
-    public List<ActivityRecord> getAll() {
-        Iterable<ActivityEntity> activityEntities = activityEntityRepository.findAll();
-        return activityEntityMapper.toActivityRecords(activityEntities);
+    public Page<ActivityRecord> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ActivityEntity> activityEntities = activityEntityRepository.findByOrderByTypeAscActionAsc(pageable);
+        return activityEntities.map(activityEntityMapper::toActivityRecord);
     }
 
     @Override

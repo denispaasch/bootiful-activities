@@ -1,14 +1,18 @@
 package be.dpa.bootiful.activities.padp.rest;
 
 
+import be.dpa.bootiful.activities.dm.api.ActivityModel;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
-import be.dpa.bootiful.activities.dm.api.ActivityResponse;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,10 +25,18 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ActivityController.class)
 public class ActivityControllerTest {
@@ -34,12 +46,10 @@ public class ActivityControllerTest {
 
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
-    private static final ActivityResponse STARE_AT_THE_WALL = createActivityResponse(AK_STARE, ACTION_STARE_AT_THE_WALL);
 
     private static final String AK_NETFLIX = "NETFLIX";
     private static final String ACTION_NETFLIX = "Netflix";
 
-    private static final ActivityResponse NETFLIX = createActivityResponse(AK_NETFLIX, ACTION_NETFLIX);
     private static final String URL_ACTIVITIES = "http://localhost/api/v1/activities/";
 
     private static final String AK_LEARN_HOW_THE_INTERNET_WORKS = "INTERNET";
@@ -49,36 +59,52 @@ public class ActivityControllerTest {
 
     private static final String AK_BIKE = "BIKE";
 
-    private static ActivityResponse createActivityResponse(String alternateKey, String action) {
-        ActivityResponse activityResponse = new ActivityResponse();
-        activityResponse.setAction(action);
-        activityResponse.setAlternateKey(alternateKey);
-        activityResponse.setNoOfParticipants(1);
-        return activityResponse;
-    }
+    private ActivityModel stareAtTheWallActivity;
+
+    private ActivityModel netflixActivity;
 
     @MockBean
     private IActivityService activityService;
-
     @Autowired
     private MockMvc mockMvc;
 
+    private ActivityModel createActivityResponse(String alternateKey, String action) {
+        ActivityModel activityModel = new ActivityModel();
+        activityModel.setAction(action);
+        activityModel.setAlternateKey(alternateKey);
+        activityModel.setNoOfParticipants(1);
+        return activityModel;
+    }
+
+    @BeforeEach
+    public void setUp() {
+        stareAtTheWallActivity = createActivityResponse(AK_STARE, ACTION_STARE_AT_THE_WALL);
+        netflixActivity = createActivityResponse(AK_NETFLIX, ACTION_NETFLIX);
+    }
+
     @Test
     public void testGetActivitiesSuccess() throws Exception {
+        Page<ActivityModel> activityResponsePage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
+        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(Page.empty());
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$._links.self.href", is("http://localhost/api/v1/activities")))
+                .andExpect(jsonPath("$.page.size", is(0)))
+                .andExpect(jsonPath("$.page.totalElements", is(0)))
+                .andExpect(jsonPath("$.page.totalPages", is(1)))
+                .andExpect(jsonPath("$.page.number", is(0)));
 
-        when(activityService.getActivities()).thenReturn(Arrays.asList(STARE_AT_THE_WALL, NETFLIX));
 
+        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityResponsePage);
         mockMvc.perform(get("/api/v1/activities"))
+                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].alternateKey", is(AK_STARE)))
-                .andExpect(jsonPath("$[0].action", is(ACTION_STARE_AT_THE_WALL)))
-                .andExpect(jsonPath("$[0].links[0].href", is(URL_ACTIVITIES.concat(AK_STARE))))
-                .andExpect(jsonPath("$[1].alternateKey", is(AK_NETFLIX)))
-                .andExpect(jsonPath("$[1].action", is(ACTION_NETFLIX)))
-                .andExpect(jsonPath("$[1].links[0].href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
+                .andExpect(jsonPath("$._embedded.activityModelList[0].alternateKey", is(AK_STARE)))
+                .andExpect(jsonPath("$._embedded.activityModelList[0].action", is(ACTION_STARE_AT_THE_WALL)))
+                .andExpect(jsonPath("$._embedded.activityModelList[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
+                .andExpect(jsonPath("$._embedded.activityModelList[1].alternateKey", is(AK_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activityModelList[1].action", is(ACTION_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activityModelList[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
     }
 
     @Test
@@ -89,9 +115,8 @@ public class ActivityControllerTest {
 
     @Test
     public void testGetActivity() throws Exception {
-        when(activityService.getActivityBy(eq(AK_STARE))).thenReturn(Optional.of(STARE_AT_THE_WALL));
+        when(activityService.getActivityBy(eq(AK_STARE))).thenReturn(Optional.of(stareAtTheWallActivity));
         mockMvc.perform(get("/api/v1/activities/".concat(AK_STARE)))
-                // .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.alternateKey", is(AK_STARE)))
                 .andExpect(jsonPath("$.action", is(ACTION_STARE_AT_THE_WALL)));
@@ -109,15 +134,15 @@ public class ActivityControllerTest {
 
     @Test
     public void testNewActivity() throws Exception {
-        ActivityResponse activityResponse = new ActivityResponse();
-        activityResponse.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
-        when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activityResponse);
+        ActivityModel activityModel = new ActivityModel();
+        activityModel.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
+        when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activityModel);
 
         String newActivityJson = readFile(NEW_ACTIVITY_JSON);
         mockMvc.perform(post("/api/v1/activities")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(newActivityJson)
-                .characterEncoding(StandardCharsets.UTF_8))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newActivityJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
                 // .andDo(print())
                 .andExpect(redirectedUrl(URL_ACTIVITY_INTERNET))
                 .andExpect(status().isCreated());
@@ -135,9 +160,9 @@ public class ActivityControllerTest {
     public void testUpdateActivity() throws Exception {
         String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
         mockMvc.perform(put("/api/v1/activities/BIKE")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(updateActivityJson)
-                .characterEncoding(StandardCharsets.UTF_8))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateActivityJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
                 .andDo(print())
                 .andExpect(redirectedUrl(URL_ACTIVITY_BIKE))
                 .andExpect(status().isNoContent());

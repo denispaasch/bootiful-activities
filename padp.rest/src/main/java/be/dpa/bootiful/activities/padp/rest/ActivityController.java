@@ -1,12 +1,16 @@
 package be.dpa.bootiful.activities.padp.rest;
 
+import be.dpa.bootiful.activities.dm.api.ActivityModel;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
-import be.dpa.bootiful.activities.dm.api.ActivityResponse;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,11 +20,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -38,47 +42,51 @@ class ActivityController {
 
     private final IActivityService activityService;
 
+    private final PagedResourcesAssembler<ActivityModel> activityResponsePagedResourcesAssembler;
+
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<ActivityResponse>> getActivities() {
-        List<ActivityResponse> activities = activityService.getActivities();
-        activities.forEach(activity -> {
+    public ResponseEntity<PagedModel<EntityModel<ActivityModel>>> getActivities(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+        Page<ActivityModel> activities = activityService.getActivities(page, size);
+        activities.getContent().forEach(activity -> {
             Link selfLink = linkTo(methodOn(ActivityController.class)
                     .getActivityBy(activity.getAlternateKey())).withSelfRel();
             activity.add(selfLink);
         });
-        return ResponseEntity.ok(activities);
+        return ResponseEntity.ok(activityResponsePagedResourcesAssembler.toModel(activities));
     }
 
     @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ActivityResponse> getActivityBy(@PathVariable String alternateKey) {
-        Optional<ActivityResponse> optResponse = activityService.getActivityBy(alternateKey);
-        ActivityResponse activityResponse = optResponse.orElse(null);
-        if (activityResponse == null) {
+    public ResponseEntity<ActivityModel> getActivityBy(@PathVariable String alternateKey) {
+        Optional<ActivityModel> optResponse = activityService.getActivityBy(alternateKey);
+        ActivityModel activityModel = optResponse.orElse(null);
+        if (activityModel == null) {
             return ResponseEntity.notFound().build();
         }
-        addActivityLinks(activityResponse);
-        return ResponseEntity.ok(activityResponse);
+        addActivityLinks(activityModel);
+        return ResponseEntity.ok(activityModel);
     }
 
-    private void addActivityLinks(ActivityResponse activityResponse) {
+    private void addActivityLinks(ActivityModel activityModel) {
         Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(activityResponse.getAlternateKey())).withSelfRel();
-        activityResponse.add(selfLink);
-        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities()).withRel("activities");
-        activityResponse.add(activitiesLink);
+                .getActivityBy(activityModel.getAlternateKey())).withSelfRel();
+        activityModel.add(selfLink);
+        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(0, 5)).withRel("activities");
+        activityModel.add(activitiesLink);
     }
 
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> newActivity(@RequestBody ActivityRequest activityRequest) {
-        ActivityResponse activityResponse = activityService.newActivity(activityRequest);
-        addActivityLinks(activityResponse);
+        ActivityModel activityModel = activityService.newActivity(activityRequest);
+        addActivityLinks(activityModel);
         try {
-            URI activityUri = new URI(activityResponse.getRequiredLink(IanaLinkRelations.SELF).getHref());
-            return ResponseEntity.created(activityUri).body(activityResponse);
+            URI activityUri = new URI(activityModel.getRequiredLink(IanaLinkRelations.SELF).getHref());
+            return ResponseEntity.created(activityUri).body(activityModel);
         } catch (URISyntaxException e) {
             return ResponseEntity.badRequest().body(
                     String.format("Failed to create URI to new activity with alternate key %s",
-                            activityResponse.getAlternateKey()));
+                            activityModel.getAlternateKey()));
         }
     }
 

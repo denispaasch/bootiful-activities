@@ -6,6 +6,7 @@ import be.dpa.bootiful.activities.sadp.bored.mapper.IBoredActivityRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -24,7 +25,7 @@ import java.util.TimerTask;
 @Slf4j
 public class BoredActivityProvider {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     private final IBoredActivityRecordMapper boredActivityMapper;
 
