@@ -4,15 +4,35 @@ package be.dpa.bootiful.activities.dm.api;
 import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
+/**
+ * Activity response.
+ *
+ * @author denis
+ */
 @Data
 public class ActivityResponse extends RepresentationModel<ActivityResponse> {
-    String alternateKey;
+    /**
+     * The unique identifier of the activity.
+     */
+    private String alternateKey;
 
-    String action;
+    /**
+     * The actual activity.
+     */
+    private String action;
 
-    String type;
+    /**
+     * The activity type.
+     */
+    private String type;
 
-    int noOfParticipants;
+    /**
+     * The number of participants.
+     */
+    private int noOfParticipants;
 
-    String details;
+    /**
+     * A reference to more details regarding the activity.
+     */
+    private String details;
 }

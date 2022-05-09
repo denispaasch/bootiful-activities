@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Activity service.
+ *
+ * @author denis 
+ */
 @Service
 @RequiredArgsConstructor
 public class ActivityService implements IActivityService {

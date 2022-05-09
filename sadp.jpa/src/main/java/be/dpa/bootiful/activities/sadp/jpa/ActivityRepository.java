@@ -9,6 +9,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The activity repository implementation.
+ *
+ * @author denis
+ */
 @RequiredArgsConstructor
 @Repository
 public class ActivityRepository implements IActivityRepository {

@@ -5,6 +5,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * The activity entity repository.
+ *
+ * @author denis
+ */
 @Repository
 public interface IActivityEntityRepository extends CrudRepository<ActivityEntity, Long> {
 

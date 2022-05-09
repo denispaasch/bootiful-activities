@@ -1,7 +1,11 @@
 package be.dpa.bootiful.activities.dm.api;
 
-import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
+/**
+ * Root response.
+ *
+ * @author denis
+ */
 public class RootResponse extends RepresentationModel<RootResponse> {
 }

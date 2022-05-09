@@ -2,14 +2,31 @@ package be.dpa.bootiful.activities.dm.api;
 
 import lombok.Data;
 
+/**
+ * Request to create or update an activity.
+ *
+ * @author denis
+ */
 @Data
 public class ActivityRequest {
 
-    String action;
+    /**
+     * The actual activity.
+     */
+    private String action;
 
-    String type;
+    /**
+     * The activity type.
+     */
+    private String type;
 
-    int noOfParticipants;
+    /**
+     * The number of participants.
+     */
+    private int noOfParticipants;
 
-    String details;
+    /**
+     * A reference to more details regarding the activity.
+     */
+    private String details;
 }

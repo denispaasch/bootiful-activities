@@ -99,7 +99,9 @@ public class ActivityControllerTest {
 
     private String readFile(String file) {
         try (InputStream inputStream = ActivityController.class.getResourceAsStream(file)) {
-            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            byte[] bytes = inputStream.readAllBytes();
+
+            return new String(bytes, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }

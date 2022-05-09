@@ -4,14 +4,19 @@ import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.ActivityResponse;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.LinkRelation;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -21,18 +26,24 @@ import java.util.Optional;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+/**
+ * Controller for the activities REST API.
+ *
+ * @author denis
+ */
 @RestController
 @RequestMapping("/api/v1/activities")
 @RequiredArgsConstructor
-public class ActivityController {
+class ActivityController {
 
     private final IActivityService activityService;
 
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<List<ActivityResponse>> getActivities() {
         List<ActivityResponse> activities = activityService.getActivities();
-        activities.stream().forEach(activity -> {
-            Link selfLink = linkTo(methodOn(ActivityController.class).getActivityBy(activity.getAlternateKey())).withSelfRel();
+        activities.forEach(activity -> {
+            Link selfLink = linkTo(methodOn(ActivityController.class)
+                    .getActivityBy(activity.getAlternateKey())).withSelfRel();
             activity.add(selfLink);
         });
         return ResponseEntity.ok(activities);
@@ -50,7 +61,8 @@ public class ActivityController {
     }
 
     private void addActivityLinks(ActivityResponse activityResponse) {
-        Link selfLink = linkTo(methodOn(ActivityController.class).getActivityBy(activityResponse.getAlternateKey())).withSelfRel();
+        Link selfLink = linkTo(methodOn(ActivityController.class)
+                .getActivityBy(activityResponse.getAlternateKey())).withSelfRel();
         activityResponse.add(selfLink);
         Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities()).withRel("activities");
         activityResponse.add(activitiesLink);
@@ -61,16 +73,18 @@ public class ActivityController {
         ActivityResponse activityResponse = activityService.newActivity(activityRequest);
         addActivityLinks(activityResponse);
         try {
-            return ResponseEntity.created(new URI(
-                    activityResponse.getRequiredLink(IanaLinkRelations.SELF).getHref())).body(activityResponse);
+            URI activityUri = new URI(activityResponse.getRequiredLink(IanaLinkRelations.SELF).getHref());
+            return ResponseEntity.created(activityUri).body(activityResponse);
         } catch (URISyntaxException e) {
             return ResponseEntity.badRequest().body(
-                    String.format("Failed to create URI to new activity with alternate key %s", activityResponse.getAlternateKey()));
+                    String.format("Failed to create URI to new activity with alternate key %s",
+                            activityResponse.getAlternateKey()));
         }
     }
 
     @PutMapping(value = "/{alternateKey}")
-    public ResponseEntity<?> updateActivity(@RequestBody ActivityRequest activityRequest, @PathVariable String alternateKey) {
+    public ResponseEntity<?> updateActivity(@RequestBody ActivityRequest activityRequest,
+                                            @PathVariable String alternateKey) {
         activityService.updateActivity(alternateKey, activityRequest);
         Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();
         try {

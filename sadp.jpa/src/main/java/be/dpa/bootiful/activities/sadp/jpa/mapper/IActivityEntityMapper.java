@@ -7,6 +7,11 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
+/**
+ * Maps activity entities to records and vice versa.
+ *
+ * @author  denis
+ */
 @Mapper(componentModel = "spring")
 public interface IActivityEntityMapper {
 

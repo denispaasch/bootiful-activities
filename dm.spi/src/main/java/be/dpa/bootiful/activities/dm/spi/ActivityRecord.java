@@ -2,6 +2,11 @@ package be.dpa.bootiful.activities.dm.spi;
 
 import lombok.Data;
 
+/**
+ * An activity record.
+ *
+ * @author denis
+ */
 @Data
 public class ActivityRecord {
 

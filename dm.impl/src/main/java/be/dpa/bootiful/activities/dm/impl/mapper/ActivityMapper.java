@@ -8,6 +8,11 @@ import org.mapstruct.Mapping;
 
 import java.util.List;
 
+/**
+ * Maps activity records and requests from the secondary adapter to the primary adapter and vice versa.
+ *
+ * @author denis
+ */
 @Mapper(componentModel = "spring")
 public interface ActivityMapper {
 
