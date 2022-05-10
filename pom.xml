@@ -51,6 +51,15 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.6.0.0</version>
+				<configuration>
+					<effort>max</effort>
+					<failOnError>true</failOnError>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
