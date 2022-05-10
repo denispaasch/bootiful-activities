@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
@@ -90,7 +91,7 @@ class ActivityController {
     }
 
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> newActivity(@RequestBody ActivityRequest activityRequest) {
+    public ResponseEntity<?> newActivity(@Valid @RequestBody ActivityRequest activityRequest) {
         Activity activity = activityService.newActivity(activityRequest);
         addActivityLinks(activity);
         try {
@@ -104,7 +105,7 @@ class ActivityController {
     }
 
     @PutMapping(value = "/{alternateKey}")
-    public ResponseEntity<?> updateActivity(@RequestBody ActivityRequest activityRequest,
+    public ResponseEntity<?> updateActivity(@Valid @RequestBody ActivityRequest activityRequest,
                                             @PathVariable String alternateKey) {
         activityService.updateActivity(alternateKey, activityRequest);
         Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();

@@ -2,6 +2,10 @@ package be.dpa.bootiful.activities.dm.api;
 
 import lombok.Data;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+
 /**
  * Request to create or update an activity.
  *
@@ -10,23 +14,18 @@ import lombok.Data;
 @Data
 public class ActivityRequest {
 
-    /**
-     * The actual activity.
-     */
+    @NotNull(message = "The action is mandatory")
+    @Size(min = 1, max = 255, message = "The action can contain from 1 up to 255 characters")
     private String action;
 
-    /**
-     * The activity type.
-     */
+    @NotNull(message = "The type is mandatory")
+    @Size(min = 1, max = 50, message = "The type can contain from 1 up to 50 characters")
     private String type;
 
-    /**
-     * The number of participants.
-     */
+    @NotNull(message = "The number of participants is mandatory")
+    @Min(1)
     private int noOfParticipants;
 
-    /**
-     * A reference to more details regarding the activity.
-     */
+    @Size(max = 255, message = "The action can contain from 1 up to 255 characters")
     private String details;
 }
