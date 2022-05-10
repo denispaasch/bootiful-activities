@@ -59,8 +59,7 @@ public class ActivityRepository implements IActivityRepository {
     }
 
     @Override
-    public void delete(String alternateKey) {
-        Optional<ActivityEntity> optActivityEntity = activityEntityRepository.findByAlternateKey(alternateKey);
-        optActivityEntity.ifPresent(activityEntity -> activityEntityRepository.delete(activityEntity));
+    public Long delete(String alternateKey) {
+        return activityEntityRepository.deleteByAlternateKey(alternateKey);
     }
 }

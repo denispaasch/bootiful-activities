@@ -3,6 +3,11 @@ package be.dpa.bootiful.activities.padp.rest;
 import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -40,6 +45,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 class ActivityController {
 
+    public static final String RELATION_ACTIVITIES = "activities";
     private final IActivityService activityService;
 
     private final PagedResourcesAssembler<Activity> activityResponsePagedResourcesAssembler;
@@ -57,6 +63,12 @@ class ActivityController {
         return ResponseEntity.ok(activityResponsePagedResourcesAssembler.toModel(activities));
     }
 
+    @Operation(summary = "Gets an activity by its alternate key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Found the activity", content =
+            {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = Activity.class))}),
+        @ApiResponse(responseCode = "404", description = "Activity not found", content = @Content)})
     @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Activity> getActivityBy(@PathVariable String alternateKey) {
         Optional<Activity> optResponse = activityService.getActivityBy(alternateKey);
@@ -72,7 +84,8 @@ class ActivityController {
         Link selfLink = linkTo(methodOn(ActivityController.class)
                 .getActivityBy(activity.getAlternateKey())).withSelfRel();
         activity.add(selfLink);
-        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(0, 5)).withRel("activities");
+        Link activitiesLink = linkTo(methodOn(ActivityController.class)
+                .getActivities(0, 5)).withRel(RELATION_ACTIVITIES);
         activity.add(activitiesLink);
     }
 
@@ -103,10 +116,18 @@ class ActivityController {
         }
     }
 
+    @Operation(summary = "Deletes an activity by its alternate key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Deleted the activity",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+            schema = @Schema(implementation = Activity.class))),
+        @ApiResponse(responseCode = "404", description = "Activity to delete not found", content = @Content)})
     @DeleteMapping(value = "/{alternateKey}")
     public ResponseEntity<?> deleteActivity(@PathVariable String alternateKey) {
-        activityService.deleteActivity(alternateKey);
-        return ResponseEntity.noContent().build();
+        if (activityService.deleteActivity(alternateKey)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
 }

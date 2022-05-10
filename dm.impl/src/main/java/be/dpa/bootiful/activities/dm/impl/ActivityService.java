@@ -55,8 +55,8 @@ public class ActivityService implements IActivityService {
     }
 
     @Override
-    public void deleteActivity(String alternateKey) {
-        activityRepository.delete(alternateKey);
+    public boolean deleteActivity(String alternateKey) {
+        return activityRepository.delete(alternateKey) > 0;
     }
 
 

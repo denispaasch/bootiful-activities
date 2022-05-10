@@ -51,6 +51,7 @@ public interface IActivityService {
      * Deletes an activity by its alternate key.
      *
      * @param alternateKey the alternate key of the activity to delete
+     * @return {@code true} if the activity was deleted, otherwise {@code false}
      */
-    void deleteActivity(String alternateKey);
+    boolean deleteActivity(String alternateKey);
 }

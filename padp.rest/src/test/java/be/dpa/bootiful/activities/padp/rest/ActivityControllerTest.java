@@ -97,12 +97,12 @@ public class ActivityControllerTest {
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityResponsePage);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.activityList[0].alternateKey", is(AK_STARE)))
-                .andExpect(jsonPath("$._embedded.activityList[0].action", is(ACTION_STARE_AT_THE_WALL)))
-                .andExpect(jsonPath("$._embedded.activityList[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
-                .andExpect(jsonPath("$._embedded.activityList[1].alternateKey", is(AK_NETFLIX)))
-                .andExpect(jsonPath("$._embedded.activityList[1].action", is(ACTION_NETFLIX)))
-                .andExpect(jsonPath("$._embedded.activityList[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
+                .andExpect(jsonPath("$._embedded.activities[0].alternateKey", is(AK_STARE)))
+                .andExpect(jsonPath("$._embedded.activities[0].action", is(ACTION_STARE_AT_THE_WALL)))
+                .andExpect(jsonPath("$._embedded.activities[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
+                .andExpect(jsonPath("$._embedded.activities[1].alternateKey", is(AK_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activities[1].action", is(ACTION_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activities[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
     }
 
     @Test
@@ -173,8 +173,17 @@ public class ActivityControllerTest {
 
     @Test
     public void testDeleteActivity() throws Exception {
+        when(activityService.deleteActivity(eq(AK_NETFLIX))).thenReturn(Boolean.TRUE);
         mockMvc.perform(delete("/api/v1/activities/{alternateKey}", AK_NETFLIX))
                 .andExpect(status().isNoContent());
         verify(activityService).deleteActivity(eq(AK_NETFLIX));
+    }
+
+    @Test
+    public void testDeleteNonExistentActivity() throws Exception {
+        when(activityService.deleteActivity(eq(AK_BIKE))).thenReturn(Boolean.FALSE);
+        mockMvc.perform(delete("/api/v1/activities/{alternateKey}", AK_BIKE))
+                .andExpect(status().isNotFound());
+        verify(activityService).deleteActivity(eq(AK_BIKE));
     }
 }
