@@ -1,6 +1,6 @@
 package be.dpa.bootiful.activities.dm.impl;
 
-import be.dpa.bootiful.activities.dm.api.ActivityModel;
+import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.impl.mapper.IActivityMapper;
@@ -27,30 +27,30 @@ public class ActivityService implements IActivityService {
     private final IActivityRepository activityRepository;
 
     @Override
-    public Page<ActivityModel> getActivities(int page, int size) {
+    public Page<Activity> getActivities(int page, int size) {
         Page<ActivityRecord> activityRecords = activityRepository.getAll(page, size);
         return activityRecords.map(activityMapper::toActivityResponse);
     }
 
     @Override
-    public Optional<ActivityModel> getActivityBy(String alternateKey) {
+    public Optional<Activity> getActivityBy(String alternateKey) {
         Optional<ActivityRecord> optFound = activityRepository.getBy(alternateKey);
         return optFound.map(activityRecord -> activityMapper.toActivityResponse(activityRecord));
     }
 
-    private ActivityModel save(String alternateKey, ActivityRequest activityRequest) {
+    private Activity save(String alternateKey, ActivityRequest activityRequest) {
         ActivityRecord activityRecord = activityMapper.toActivityRecord(activityRequest);
         activityRecord.setAlternateKey(alternateKey);
         return activityMapper.toActivityResponse(activityRepository.save(activityRecord));
     }
 
     @Override
-    public ActivityModel newActivity(ActivityRequest activityRequest) {
+    public Activity newActivity(ActivityRequest activityRequest) {
         return save(UUID.randomUUID().toString(), activityRequest);
     }
 
     @Override
-    public ActivityModel updateActivity(String alternateKey, ActivityRequest activityRequest) {
+    public Activity updateActivity(String alternateKey, ActivityRequest activityRequest) {
         return save(alternateKey, activityRequest);
     }
 

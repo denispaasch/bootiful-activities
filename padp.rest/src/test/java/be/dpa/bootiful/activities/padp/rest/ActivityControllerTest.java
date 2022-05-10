@@ -1,7 +1,7 @@
 package be.dpa.bootiful.activities.padp.rest;
 
 
-import be.dpa.bootiful.activities.dm.api.ActivityModel;
+import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,21 +58,21 @@ public class ActivityControllerTest {
 
     private static final String AK_BIKE = "BIKE";
 
-    private ActivityModel stareAtTheWallActivity;
+    private Activity stareAtTheWallActivity;
 
-    private ActivityModel netflixActivity;
+    private Activity netflixActivity;
 
     @MockBean
     private IActivityService activityService;
     @Autowired
     private MockMvc mockMvc;
 
-    private ActivityModel createActivityResponse(String alternateKey, String action) {
-        ActivityModel activityModel = new ActivityModel();
-        activityModel.setAction(action);
-        activityModel.setAlternateKey(alternateKey);
-        activityModel.setNoOfParticipants(1);
-        return activityModel;
+    private Activity createActivityResponse(String alternateKey, String action) {
+        Activity activity = new Activity();
+        activity.setAction(action);
+        activity.setAlternateKey(alternateKey);
+        activity.setNoOfParticipants(1);
+        return activity;
     }
 
     @BeforeEach
@@ -84,7 +83,7 @@ public class ActivityControllerTest {
 
     @Test
     public void testGetActivitiesSuccess() throws Exception {
-        Page<ActivityModel> activityResponsePage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
+        Page<Activity> activityResponsePage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(Page.empty());
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
@@ -97,14 +96,13 @@ public class ActivityControllerTest {
 
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityResponsePage);
         mockMvc.perform(get("/api/v1/activities"))
-                .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.activityModelList[0].alternateKey", is(AK_STARE)))
-                .andExpect(jsonPath("$._embedded.activityModelList[0].action", is(ACTION_STARE_AT_THE_WALL)))
-                .andExpect(jsonPath("$._embedded.activityModelList[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
-                .andExpect(jsonPath("$._embedded.activityModelList[1].alternateKey", is(AK_NETFLIX)))
-                .andExpect(jsonPath("$._embedded.activityModelList[1].action", is(ACTION_NETFLIX)))
-                .andExpect(jsonPath("$._embedded.activityModelList[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
+                .andExpect(jsonPath("$._embedded.activityList[0].alternateKey", is(AK_STARE)))
+                .andExpect(jsonPath("$._embedded.activityList[0].action", is(ACTION_STARE_AT_THE_WALL)))
+                .andExpect(jsonPath("$._embedded.activityList[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
+                .andExpect(jsonPath("$._embedded.activityList[1].alternateKey", is(AK_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activityList[1].action", is(ACTION_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activityList[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
     }
 
     @Test
@@ -134,16 +132,15 @@ public class ActivityControllerTest {
 
     @Test
     public void testNewActivity() throws Exception {
-        ActivityModel activityModel = new ActivityModel();
-        activityModel.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
-        when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activityModel);
+        Activity activity = new Activity();
+        activity.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
+        when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activity);
 
         String newActivityJson = readFile(NEW_ACTIVITY_JSON);
         mockMvc.perform(post("/api/v1/activities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newActivityJson)
                         .characterEncoding(StandardCharsets.UTF_8))
-                // .andDo(print())
                 .andExpect(redirectedUrl(URL_ACTIVITY_INTERNET))
                 .andExpect(status().isCreated());
 
@@ -163,7 +160,6 @@ public class ActivityControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateActivityJson)
                         .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print())
                 .andExpect(redirectedUrl(URL_ACTIVITY_BIKE))
                 .andExpect(status().isNoContent());
         ArgumentCaptor<ActivityRequest> activityRequestArgumentCaptor = ArgumentCaptor.forClass(ActivityRequest.class);

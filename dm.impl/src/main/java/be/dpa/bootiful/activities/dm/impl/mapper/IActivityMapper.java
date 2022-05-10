@@ -1,7 +1,7 @@
 package be.dpa.bootiful.activities.dm.impl.mapper;
 
+import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
-import be.dpa.bootiful.activities.dm.api.ActivityModel;
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +14,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface IActivityMapper {
 
-    ActivityModel toActivityResponse(ActivityRecord activityRecord);
+    Activity toActivityResponse(ActivityRecord activityRecord);
 
     @Mapping(target = "alternateKey", ignore = true)
     @Mapping(target = "externalKey", ignore = true)

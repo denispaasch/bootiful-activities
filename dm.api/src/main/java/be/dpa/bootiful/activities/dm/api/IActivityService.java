@@ -19,7 +19,7 @@ public interface IActivityService {
      *
      * @return a list opf activities
      */
-    Page<ActivityModel> getActivities(int page, int size);
+    Page<Activity> getActivities(int page, int size);
 
     /**
      * Gets an activity using its alternate key.
@@ -27,7 +27,7 @@ public interface IActivityService {
      * @param alternateKey the alternate key
      * @return an optional activity
      */
-    Optional<ActivityModel> getActivityBy(String alternateKey);
+    Optional<Activity> getActivityBy(String alternateKey);
 
     /**
      * Creates a new activity using the passed activity request.
@@ -35,7 +35,7 @@ public interface IActivityService {
      * @param activityRequest the activity request
      * @return the newly created activity
      */
-    ActivityModel newActivity(ActivityRequest activityRequest);
+    Activity newActivity(ActivityRequest activityRequest);
 
     /**
      * Updates an existing activity.
@@ -44,8 +44,8 @@ public interface IActivityService {
      * @param activityRequest the activity request containing the data to set
      * @return the updated activity
      */
-    ActivityModel updateActivity(String alternateKey,
-                                 ActivityRequest activityRequest);
+    Activity updateActivity(String alternateKey,
+                            ActivityRequest activityRequest);
 
     /**
      * Deletes an activity by its alternate key.

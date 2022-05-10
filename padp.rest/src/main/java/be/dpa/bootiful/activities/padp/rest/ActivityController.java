@@ -1,6 +1,6 @@
 package be.dpa.bootiful.activities.padp.rest;
 
-import be.dpa.bootiful.activities.dm.api.ActivityModel;
+import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import lombok.RequiredArgsConstructor;
@@ -42,13 +42,13 @@ class ActivityController {
 
     private final IActivityService activityService;
 
-    private final PagedResourcesAssembler<ActivityModel> activityResponsePagedResourcesAssembler;
+    private final PagedResourcesAssembler<Activity> activityResponsePagedResourcesAssembler;
 
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<PagedModel<EntityModel<ActivityModel>>> getActivities(
+    public ResponseEntity<PagedModel<EntityModel<Activity>>> getActivities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        Page<ActivityModel> activities = activityService.getActivities(page, size);
+        Page<Activity> activities = activityService.getActivities(page, size);
         activities.getContent().forEach(activity -> {
             Link selfLink = linkTo(methodOn(ActivityController.class)
                     .getActivityBy(activity.getAlternateKey())).withSelfRel();
@@ -58,35 +58,35 @@ class ActivityController {
     }
 
     @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ActivityModel> getActivityBy(@PathVariable String alternateKey) {
-        Optional<ActivityModel> optResponse = activityService.getActivityBy(alternateKey);
-        ActivityModel activityModel = optResponse.orElse(null);
-        if (activityModel == null) {
+    public ResponseEntity<Activity> getActivityBy(@PathVariable String alternateKey) {
+        Optional<Activity> optResponse = activityService.getActivityBy(alternateKey);
+        Activity activity = optResponse.orElse(null);
+        if (activity == null) {
             return ResponseEntity.notFound().build();
         }
-        addActivityLinks(activityModel);
-        return ResponseEntity.ok(activityModel);
+        addActivityLinks(activity);
+        return ResponseEntity.ok(activity);
     }
 
-    private void addActivityLinks(ActivityModel activityModel) {
+    private void addActivityLinks(Activity activity) {
         Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(activityModel.getAlternateKey())).withSelfRel();
-        activityModel.add(selfLink);
+                .getActivityBy(activity.getAlternateKey())).withSelfRel();
+        activity.add(selfLink);
         Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(0, 5)).withRel("activities");
-        activityModel.add(activitiesLink);
+        activity.add(activitiesLink);
     }
 
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> newActivity(@RequestBody ActivityRequest activityRequest) {
-        ActivityModel activityModel = activityService.newActivity(activityRequest);
-        addActivityLinks(activityModel);
+        Activity activity = activityService.newActivity(activityRequest);
+        addActivityLinks(activity);
         try {
-            URI activityUri = new URI(activityModel.getRequiredLink(IanaLinkRelations.SELF).getHref());
-            return ResponseEntity.created(activityUri).body(activityModel);
+            URI activityUri = new URI(activity.getRequiredLink(IanaLinkRelations.SELF).getHref());
+            return ResponseEntity.created(activityUri).body(activity);
         } catch (URISyntaxException e) {
             return ResponseEntity.badRequest().body(
                     String.format("Failed to create URI to new activity with alternate key %s",
-                            activityModel.getAlternateKey()));
+                            activity.getAlternateKey()));
         }
     }
 

@@ -11,14 +11,14 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(RootController.class)
-public class RootControllerTest {
+@WebMvcTest(ApiEntrypointController.class)
+public class ApiEntrypointControllerTest {
 
     @Autowired
     private MockMvc mvc;
 
     @Test
-    public void testRoot() throws Exception {
+    public void testEntrypoint() throws Exception {
         mvc.perform(get("/api/v1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaTypes.HAL_JSON))

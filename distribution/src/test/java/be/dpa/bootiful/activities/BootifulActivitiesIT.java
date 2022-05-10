@@ -65,7 +65,6 @@ class BootifulActivitiesIT {
     @Test
     public void testGetActivities() throws Exception {
         mockMvc.perform(get("/api/v1/activities"))
-                .andDo(print())
                 .andExpect(status().isOk());
     }
 

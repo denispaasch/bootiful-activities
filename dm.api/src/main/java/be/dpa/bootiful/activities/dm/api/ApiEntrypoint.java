@@ -3,9 +3,9 @@ package be.dpa.bootiful.activities.dm.api;
 import org.springframework.hateoas.RepresentationModel;
 
 /**
- * Root response.
+ * API entrypoint.
  *
  * @author denis
  */
-public class RootResponse extends RepresentationModel<RootResponse> {
+public class ApiEntrypoint extends RepresentationModel<ApiEntrypoint> {
 }
