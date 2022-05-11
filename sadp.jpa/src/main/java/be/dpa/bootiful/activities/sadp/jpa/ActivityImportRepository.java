@@ -44,7 +44,7 @@ public class ActivityImportRepository implements IActivityImportRepository {
             ParticipantEntity participantEntity = new ParticipantEntity();
             participantEntity.setAlternateKey(UUID.randomUUID().toString());
             participantEntity.setFirstName(faker.cat().name());
-            participantEntity.setLastName(faker.hipster().word());
+            participantEntity.setLastName(faker.artist().name());
             participantEntities.add(participantEntity);
         }
         return participantEntities;

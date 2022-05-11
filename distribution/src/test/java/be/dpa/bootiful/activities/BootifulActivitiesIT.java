@@ -134,7 +134,7 @@ class BootifulActivitiesIT {
         mockMvc.perform(post("/api/v1/activities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .characterEncoding(StandardCharsets.UTF_8))
-                .andDo(print());
+                .andExpect(status().isBadRequest());
     }
 
 }

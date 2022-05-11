@@ -41,7 +41,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ActivityControllerTest {
 
     private static final String NEW_ACTIVITY_JSON = "/newActivity.json";
+
+    private static final String NEW_ACTIVITY_INVALID_JSON = "/newActivityInvalid.json";
     private static final String UPDATE_ACTIVITY_JSON = "/updateActivity.json";
+    private static final String UPDATE_ACTIVITY_INVALID_JSON = "/updateActivityInvalid.json";
 
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
@@ -153,6 +156,16 @@ public class ActivityControllerTest {
     }
 
     @Test
+    public void testNewActivityBadRequest() throws Exception {
+        String newActivityInvalidJson = readFile(NEW_ACTIVITY_INVALID_JSON);
+        mockMvc.perform(post("/api/v1/activities")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newActivityInvalidJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void testUpdateActivity() throws Exception {
         String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
         mockMvc.perform(put("/api/v1/activities/BIKE")
@@ -168,6 +181,16 @@ public class ActivityControllerTest {
         assertEquals("outside", activityRequest.getType());
         assertEquals(1, activityRequest.getNoOfParticipants());
         assertEquals("", activityRequest.getDetails());
+    }
+
+    @Test
+    public void testUpdateActivityBadRequest() throws Exception {
+        String updateActivityInvalidJson = readFile(UPDATE_ACTIVITY_INVALID_JSON);
+        mockMvc.perform(put("/api/v1/activities/BIKE")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateActivityInvalidJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
