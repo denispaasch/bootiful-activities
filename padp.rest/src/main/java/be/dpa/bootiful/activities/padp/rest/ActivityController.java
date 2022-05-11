@@ -51,17 +51,23 @@ class ActivityController {
 
     private final PagedResourcesAssembler<Activity> activityResponsePagedResourcesAssembler;
 
+    @Operation(summary = "Gets a paged model containing activities")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "A paged model of activities is returned", content =
+            {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = PagedModel.class))})})
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<PagedModel<EntityModel<Activity>>> getActivities(
+    public ResponseEntity<PagedModel<Activity>> getActivities(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         Page<Activity> activities = activityService.getActivities(page, size);
+
         activities.getContent().forEach(activity -> {
             Link selfLink = linkTo(methodOn(ActivityController.class)
                     .getActivityBy(activity.getAlternateKey())).withSelfRel();
             activity.add(selfLink);
         });
-        return ResponseEntity.ok(activityResponsePagedResourcesAssembler.toModel(activities));
+        return ResponseEntity.ok(activityResponsePagedResourcesAssembler.toModel(activities, a -> a));
     }
 
     @Operation(summary = "Gets an activity by its alternate key")

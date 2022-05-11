@@ -1,4 +1,4 @@
-package be.dpa.bootiful.activities.sadp.jpa;
+package be.dpa.bootiful.activities.sadp.jpa.entities;
 
 import lombok.Data;
 
@@ -6,8 +6,10 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Set;
 
 /**
  * The activity entity.
@@ -20,25 +22,28 @@ public class ActivityEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @NotNull(message = "The alternate key is mandatory")
     @Size(min = 1, max = 255)
-    String alternateKey;
+    private String alternateKey;
 
-    String externalKey;
+    private String externalKey;
 
     @NotNull(message = "The action is mandatory")
     @Size(min = 1, max = 255)
-    String action;
+    private String action;
 
     @NotNull(message = "The type is mandatory")
     @Size(min = 1, max = 50)
-    String type;
+    private String type;
 
     @NotNull(message = "The number of participants is mandatory")
-    Integer noOfParticipants;
+    private Integer noOfParticipants;
 
     @Size(max = 255)
-    String details;
+    private String details;
+
+    @ManyToMany(mappedBy = "activities")
+    private Set<ParticipantEntity> participants;
 }

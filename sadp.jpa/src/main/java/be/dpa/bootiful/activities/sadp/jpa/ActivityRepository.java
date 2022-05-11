@@ -2,13 +2,16 @@ package be.dpa.bootiful.activities.sadp.jpa;
 
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import be.dpa.bootiful.activities.dm.spi.IActivityRepository;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IActivityEntityMapper;
+import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.Locale;
 import java.util.Optional;
 
 /**
@@ -19,6 +22,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Repository
 public class ActivityRepository implements IActivityRepository {
+
+    private final Faker faker = new Faker(Locale.ENGLISH);
 
     private final IActivityEntityMapper activityEntityMapper;
 

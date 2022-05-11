@@ -1,5 +1,6 @@
 package be.dpa.bootiful.activities.sadp.jpa;
 
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;

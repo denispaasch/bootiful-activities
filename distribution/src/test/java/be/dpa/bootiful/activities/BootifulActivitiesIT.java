@@ -1,7 +1,7 @@
 package be.dpa.bootiful.activities;
 
 import be.dpa.bootiful.activities.sadp.bored.BoredActivityProvider;
-import be.dpa.bootiful.activities.sadp.jpa.ActivityEntity;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.sadp.jpa.IActivityEntityRepository;
 import org.apache.commons.collections4.IteratorUtils;
 import org.junit.jupiter.api.BeforeEach;

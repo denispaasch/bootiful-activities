@@ -1,7 +1,7 @@
 package be.dpa.bootiful.activities.sadp.jpa.mapper;
 
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
-import be.dpa.bootiful.activities.sadp.jpa.ActivityEntity;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
