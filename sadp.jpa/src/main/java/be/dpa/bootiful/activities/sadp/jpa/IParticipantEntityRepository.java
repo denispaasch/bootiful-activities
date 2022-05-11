@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
  * @author denis
  */
 @Repository
-public interface IParticipantRepository extends PagingAndSortingRepository<ParticipantEntity, Long> {
+public interface IParticipantEntityRepository extends PagingAndSortingRepository<ParticipantEntity, Long> {
 }

@@ -3,16 +3,18 @@ package be.dpa.bootiful.activities.sadp.jpa;
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import be.dpa.bootiful.activities.dm.spi.IActivityRepository;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityParticipantEntity;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ParticipantEntity;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IActivityEntityMapper;
-import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The activity repository implementation.
@@ -23,11 +25,14 @@ import java.util.Optional;
 @Repository
 public class ActivityRepository implements IActivityRepository {
 
-    private final Faker faker = new Faker(Locale.ENGLISH);
-
+    private static final long ZERO_ROWS_AFFECTED = 0L;
     private final IActivityEntityMapper activityEntityMapper;
 
     private final IActivityEntityRepository activityEntityRepository;
+
+    private final IActivityParticipantEntityRepository activityParticipantEntityRepository;
+
+    private final IParticipantEntityRepository participantEntityRepository;
 
     @Override
     public Page<ActivityRecord> getAll(int page, int size) {
@@ -47,15 +52,6 @@ public class ActivityRepository implements IActivityRepository {
     }
 
     @Override
-    public ActivityRecord saveExternal(ActivityRecord activity) {
-        ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activity);
-        // Update if an activity with the key already exists
-        Optional<ActivityEntity> optExists = activityEntityRepository.findByExternalKey(activity.getExternalKey());
-        optExists.ifPresent(a -> activityEntity.setId(a.getId()));
-        return doSave(activityEntity);
-    }
-
-    @Override
     public ActivityRecord save(ActivityRecord activity) {
         ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activity);
         Optional<ActivityEntity> optExists = activityEntityRepository.findByAlternateKey(activity.getAlternateKey());
@@ -65,6 +61,17 @@ public class ActivityRepository implements IActivityRepository {
 
     @Override
     public Long delete(String alternateKey) {
+        Optional<ActivityEntity> optActivityEntity = activityEntityRepository.findByAlternateKey(alternateKey);
+        if (!optActivityEntity.isPresent()) {
+            return ZERO_ROWS_AFFECTED;
+        }
+
+        ActivityEntity activityEntity = optActivityEntity.get();
+        Set<ActivityParticipantEntity> activityParticipantEntities = activityEntity.getParticipantAssignments();
+        Set<ParticipantEntity> participantEntities = activityParticipantEntities.stream()
+                .map(ActivityParticipantEntity::getParticipant).collect(Collectors.toSet());
+        activityParticipantEntityRepository.deleteAll(activityParticipantEntities);
+        participantEntityRepository.deleteAll(participantEntities);
         return activityEntityRepository.deleteByAlternateKey(alternateKey);
     }
 }

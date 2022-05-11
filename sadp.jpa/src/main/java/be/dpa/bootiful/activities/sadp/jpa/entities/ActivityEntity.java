@@ -1,12 +1,15 @@
 package be.dpa.bootiful.activities.sadp.jpa.entities;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
@@ -18,6 +21,8 @@ import java.util.Set;
  */
 @Entity(name = "activity")
 @Data
+@ToString(exclude = "participantAssignments")
+@EqualsAndHashCode(exclude = "participantAssignments")
 public class ActivityEntity {
 
     @Id
@@ -44,6 +49,6 @@ public class ActivityEntity {
     @Size(max = 255)
     private String details;
 
-    @ManyToMany(mappedBy = "activities")
-    private Set<ParticipantEntity> participants;
+    @OneToMany(mappedBy = "activity")
+    private Set<ActivityParticipantEntity> participantAssignments;
 }

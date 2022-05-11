@@ -9,6 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
@@ -37,11 +38,4 @@ public class ParticipantEntity {
     @NotNull(message = "The last name is mandatory")
     @Size(min = 1, max = 255)
     private String lastName;
-
-    @ManyToMany
-    @JoinTable(
-            name = "activity_participant",
-            joinColumns = @JoinColumn(name = "participant_id"),
-            inverseJoinColumns = @JoinColumn(name = "activity_id"))
-    private Set<ActivityEntity> activities;
 }

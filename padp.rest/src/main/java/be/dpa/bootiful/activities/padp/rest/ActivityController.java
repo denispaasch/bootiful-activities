@@ -75,7 +75,7 @@ class ActivityController {
         @ApiResponse(responseCode = "200", description = "Found the activity", content =
             {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = Activity.class))}),
-        @ApiResponse(responseCode = "404", description = "Activity not found", content = @Content)})
+        @ApiResponse(responseCode = "404", description = "Activity not found")})
     @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Activity> getActivityBy(@PathVariable String alternateKey) {
         Optional<Activity> optResponse = activityService.getActivityBy(alternateKey);
@@ -96,6 +96,12 @@ class ActivityController {
         activity.add(activitiesLink);
     }
 
+    @Operation(summary = "Creates an activity")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Created the activity", content =
+                {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = @Schema(implementation = Activity.class))}),
+        @ApiResponse(responseCode = "400", description = "Passed an invalid activity request")})
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> newActivity(@Valid @RequestBody ActivityRequest activityRequest) {
         Activity activity = activityService.newActivity(activityRequest);
@@ -110,6 +116,10 @@ class ActivityController {
         }
     }
 
+    @Operation(summary = "Updates an activity")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Updated the activity"),
+        @ApiResponse(responseCode = "400", description = "Passed an invalid activity request")})
     @PutMapping(value = "/{alternateKey}")
     public ResponseEntity<?> updateActivity(@Valid @RequestBody ActivityRequest activityRequest,
                                             @PathVariable String alternateKey) {
