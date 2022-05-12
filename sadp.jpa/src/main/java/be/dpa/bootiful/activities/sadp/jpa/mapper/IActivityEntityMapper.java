@@ -19,6 +19,4 @@ public interface IActivityEntityMapper {
     ActivityEntity toActivityEntity(ActivityRecord activity);
 
     ActivityRecord toActivityRecord(ActivityEntity activityEntity);
-
-    List<ActivityRecord> toActivityRecords(Iterable<ActivityEntity> activityEntities);
 }

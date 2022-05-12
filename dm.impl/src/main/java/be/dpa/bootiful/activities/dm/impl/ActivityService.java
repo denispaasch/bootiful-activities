@@ -3,9 +3,12 @@ package be.dpa.bootiful.activities.dm.impl;
 import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
+import be.dpa.bootiful.activities.dm.api.Participant;
 import be.dpa.bootiful.activities.dm.impl.mapper.IActivityMapper;
+import be.dpa.bootiful.activities.dm.impl.mapper.IParticipantMapper;
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import be.dpa.bootiful.activities.dm.spi.IActivityRepository;
+import be.dpa.bootiful.activities.dm.spi.ParticipantRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -24,12 +27,21 @@ public class ActivityService implements IActivityService {
 
     private final IActivityMapper activityMapper;
 
+    private final IParticipantMapper participantMapper;
+
     private final IActivityRepository activityRepository;
 
     @Override
     public Page<Activity> getActivities(int page, int size) {
         Page<ActivityRecord> activityRecords = activityRepository.getAll(page, size);
         return activityRecords.map(activityMapper::toActivityResponse);
+    }
+
+    @Override
+    public Page<Participant> getActivityParticipants(String activityAlternateKey, int page, int size) {
+        Page<ParticipantRecord> participantRecords =
+                activityRepository.getParticipantsBy(activityAlternateKey, page, size);
+        return participantRecords.map(participantMapper::toParticipant);
     }
 
     @Override

@@ -14,12 +14,21 @@ public interface IActivityService {
     /**
      * Gets a list of activities.
      *
-     * @param page      the page index
-     * @param size      the page size
-     *
-     * @return a list opf activities
+     * @param page the page index
+     * @param size the page size
+     * @return a list of activities
      */
     Page<Activity> getActivities(int page, int size);
+
+    /**
+     * Gets the the participants of a specific activity.
+     *
+     * @param activityAlternateKey the alternate key of the activity
+     * @param page                 the page index
+     * @param size                 the page size
+     * @return the participants of the passed activity
+     */
+    Page<Participant> getActivityParticipants(String activityAlternateKey, int page, int size);
 
     /**
      * Gets an activity using its alternate key.

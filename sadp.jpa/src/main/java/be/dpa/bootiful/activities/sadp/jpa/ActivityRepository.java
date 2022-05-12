@@ -2,16 +2,20 @@ package be.dpa.bootiful.activities.sadp.jpa;
 
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
 import be.dpa.bootiful.activities.dm.spi.IActivityRepository;
+import be.dpa.bootiful.activities.dm.spi.ParticipantRecord;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityParticipantEntity;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ParticipantEntity;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IActivityEntityMapper;
+import be.dpa.bootiful.activities.sadp.jpa.mapper.IParticipantEntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,6 +31,8 @@ public class ActivityRepository implements IActivityRepository {
 
     private static final long ZERO_ROWS_AFFECTED = 0L;
     private final IActivityEntityMapper activityEntityMapper;
+
+    private final IParticipantEntityMapper participantEntityMapper;
 
     private final IActivityEntityRepository activityEntityRepository;
 
@@ -45,6 +51,15 @@ public class ActivityRepository implements IActivityRepository {
     public Optional<ActivityRecord> getBy(String alternateKey) {
         Optional<ActivityEntity> optFound = activityEntityRepository.findByAlternateKey(alternateKey);
         return optFound.map(activityEntity -> activityEntityMapper.toActivityRecord(activityEntity));
+    }
+
+    @Override
+    public Page<ParticipantRecord> getParticipantsBy(String activityAlternateKey, int page, int size) {
+        Page<ActivityParticipantEntity> activityParticipants =
+                activityParticipantEntityRepository
+                        .findActivityParticipants(activityAlternateKey, PageRequest.of(page, size));
+        return activityParticipants.map(activityParticipantEntity ->
+                participantEntityMapper.toParticipantRecord(activityParticipantEntity.getParticipant()));
     }
 
     private ActivityRecord doSave(ActivityEntity activityEntity) {

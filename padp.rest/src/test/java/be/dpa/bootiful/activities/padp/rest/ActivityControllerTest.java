@@ -4,6 +4,7 @@ package be.dpa.bootiful.activities.padp.rest;
 import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
+import be.dpa.bootiful.activities.dm.api.Participant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,36 +43,35 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ActivityControllerTest {
 
     private static final String NEW_ACTIVITY_JSON = "/newActivity.json";
-
     private static final String NEW_ACTIVITY_INVALID_JSON = "/newActivityInvalid.json";
     private static final String UPDATE_ACTIVITY_JSON = "/updateActivity.json";
     private static final String UPDATE_ACTIVITY_INVALID_JSON = "/updateActivityInvalid.json";
-
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
-
     private static final String AK_NETFLIX = "NETFLIX";
     private static final String ACTION_NETFLIX = "Netflix";
-
     private static final String URL_ACTIVITIES = "http://localhost/api/v1/activities/";
-
     private static final String AK_LEARN_HOW_THE_INTERNET_WORKS = "INTERNET";
     private static final String URL_ACTIVITY_INTERNET = "http://localhost/api/v1/activities/INTERNET";
-
     private static final String URL_ACTIVITY_BIKE = "http://localhost/api/v1/activities/BIKE";
-
     private static final String AK_BIKE = "BIKE";
+    private static final String AK_TOM_BOLA = "TOMBOLA";
+    private static final String TOM = "Tom";
+    private static final String BOLA = "Bola";
 
     private Activity stareAtTheWallActivity;
 
     private Activity netflixActivity;
 
+    private Participant tomBolaParticipant;
+
     @MockBean
     private IActivityService activityService;
+
     @Autowired
     private MockMvc mockMvc;
 
-    private Activity createActivityResponse(String alternateKey, String action) {
+    private Activity createActivity(String alternateKey, String action) {
         Activity activity = new Activity();
         activity.setAction(action);
         activity.setAlternateKey(alternateKey);
@@ -78,15 +79,24 @@ public class ActivityControllerTest {
         return activity;
     }
 
+    private Participant createParticipant(String alternateKey, String firstName, String lastName) {
+        Participant participant = new Participant();
+        participant.setAlternateKey(alternateKey);
+        participant.setFirstName(firstName);
+        participant.setLastName(lastName);
+        return participant;
+    }
+
     @BeforeEach
     public void setUp() {
-        stareAtTheWallActivity = createActivityResponse(AK_STARE, ACTION_STARE_AT_THE_WALL);
-        netflixActivity = createActivityResponse(AK_NETFLIX, ACTION_NETFLIX);
+        stareAtTheWallActivity = createActivity(AK_STARE, ACTION_STARE_AT_THE_WALL);
+        netflixActivity = createActivity(AK_NETFLIX, ACTION_NETFLIX);
+        tomBolaParticipant = createParticipant(AK_TOM_BOLA, TOM, BOLA);
     }
 
     @Test
     public void testGetActivitiesSuccess() throws Exception {
-        Page<Activity> activityResponsePage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
+        Page<Activity> activityPage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(Page.empty());
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
@@ -97,7 +107,7 @@ public class ActivityControllerTest {
                 .andExpect(jsonPath("$.page.number", is(0)));
 
 
-        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityResponsePage);
+        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityPage);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.activities[0].alternateKey", is(AK_STARE)))
@@ -121,6 +131,18 @@ public class ActivityControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.alternateKey", is(AK_STARE)))
                 .andExpect(jsonPath("$.action", is(ACTION_STARE_AT_THE_WALL)));
+    }
+
+    @Test
+    public void testGetActivityParticipants() throws Exception {
+        when(activityService.getActivityParticipants(eq(AK_BIKE), eq(0), eq(5)))
+                .thenReturn(new PageImpl<>(Arrays.asList(tomBolaParticipant), Pageable.ofSize(1), 1L));
+        mockMvc.perform(get("/api/v1/activities/".concat(AK_BIKE).concat("/participants")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.participants[0].alternateKey", is(AK_TOM_BOLA)))
+                .andExpect(jsonPath("$._embedded.participants[0].firstName", is(TOM)))
+                .andExpect(jsonPath("$._embedded.participants[0].lastName", is(BOLA)));
+
     }
 
     private String readFile(String file) {

@@ -10,13 +10,15 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
  * Mapping between activities and their participants.
  *
  * @author denis
  */
-@Entity(name = "activity_participant")
+@Entity
+@Table(name = "activity_participant")
 @Data
 @ToString(exclude = {"activity", "participant"})
 @EqualsAndHashCode(exclude = {"activity", "participant"})

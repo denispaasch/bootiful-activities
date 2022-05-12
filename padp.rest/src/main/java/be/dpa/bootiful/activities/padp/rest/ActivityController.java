@@ -3,6 +3,7 @@ package be.dpa.bootiful.activities.padp.rest;
 import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
+import be.dpa.bootiful.activities.dm.api.Participant;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -46,10 +46,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 class ActivityController {
 
-    public static final String RELATION_ACTIVITIES = "activities";
+    private static final String RELATION_ACTIVITIES = "activities";
+
+    private static final String RELATION_ACTIVITY = "activity";
+
+    private static final String RELATION_PARTICIPANTS = "participants";
     private final IActivityService activityService;
 
-    private final PagedResourcesAssembler<Activity> activityResponsePagedResourcesAssembler;
+    private final PagedResourcesAssembler<Activity> activityPagedResourcesAssembler;
+
+    private final PagedResourcesAssembler<Participant> participantPagedResourcesAssembler;
 
     @Operation(summary = "Gets a paged model containing activities")
     @ApiResponses(value = {
@@ -61,13 +67,8 @@ class ActivityController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
         Page<Activity> activities = activityService.getActivities(page, size);
-
-        activities.getContent().forEach(activity -> {
-            Link selfLink = linkTo(methodOn(ActivityController.class)
-                    .getActivityBy(activity.getAlternateKey())).withSelfRel();
-            activity.add(selfLink);
-        });
-        return ResponseEntity.ok(activityResponsePagedResourcesAssembler.toModel(activities, a -> a));
+        activities.getContent().forEach(this::addActivityLinks);
+        return ResponseEntity.ok(activityPagedResourcesAssembler.toModel(activities, a -> a));
     }
 
     @Operation(summary = "Gets an activity by its alternate key")
@@ -87,13 +88,32 @@ class ActivityController {
         return ResponseEntity.ok(activity);
     }
 
+    private void addParticipantLinks(Participant participant, String activityAlternateKey) {
+        Link activityLink = linkTo(methodOn(ActivityController.class)
+                .getActivityBy(activityAlternateKey)).withRel(RELATION_ACTIVITY);
+        Link activitiesLink = linkTo(methodOn(ActivityController.class)
+                .getActivities(0, 5)).withRel(RELATION_ACTIVITIES);
+        participant.add(activityLink, activitiesLink);
+    }
+
+    @GetMapping(value = "/{activityAlternateKey}/participants",
+            produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String activityAlternateKey,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "5") int size) {
+        Page<Participant> participants = activityService.getActivityParticipants(activityAlternateKey, page, size);
+        participants.getContent().forEach(participant -> addParticipantLinks(participant, activityAlternateKey));
+        return ResponseEntity.ok(participantPagedResourcesAssembler.toModel(participants, p -> p));
+    }
+
     private void addActivityLinks(Activity activity) {
         Link selfLink = linkTo(methodOn(ActivityController.class)
                 .getActivityBy(activity.getAlternateKey())).withSelfRel();
-        activity.add(selfLink);
+        Link participantsLink = linkTo(methodOn(ActivityController.class)
+                .getParticipantsBy(activity.getAlternateKey(), 0, 5)).withRel(RELATION_PARTICIPANTS);
         Link activitiesLink = linkTo(methodOn(ActivityController.class)
                 .getActivities(0, 5)).withRel(RELATION_ACTIVITIES);
-        activity.add(activitiesLink);
+        activity.add(selfLink, participantsLink, activitiesLink);
     }
 
     @Operation(summary = "Creates an activity")

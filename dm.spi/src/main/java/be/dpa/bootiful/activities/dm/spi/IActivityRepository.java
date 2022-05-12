@@ -15,6 +15,8 @@ public interface IActivityRepository {
 
     Optional<ActivityRecord> getBy(String alternateKey);
 
+    Page<ParticipantRecord> getParticipantsBy(String activityAlternateKey, int page, int size);
+
     ActivityRecord save(ActivityRecord activity);
 
     Long delete(String alternateKey);
