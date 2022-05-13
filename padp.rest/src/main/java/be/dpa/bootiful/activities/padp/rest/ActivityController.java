@@ -36,6 +36,9 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
+import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_ACTIVITIES;
+import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_ACTIVITY;
+import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_PARTICIPANTS;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -49,11 +52,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 class ActivityController {
 
-    private static final String RELATION_ACTIVITIES = "activities";
-
-    private static final String RELATION_ACTIVITY = "activity";
-
-    private static final String RELATION_PARTICIPANTS = "participants";
     private final IActivityService activityService;
 
     private final PagedResourcesAssembler<Activity> activityPagedResourcesAssembler;
