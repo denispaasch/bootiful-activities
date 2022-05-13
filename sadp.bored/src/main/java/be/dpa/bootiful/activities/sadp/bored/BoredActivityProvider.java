@@ -15,7 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Fetches bored activities and saves them using the activity repository.
+ * Fetches bored activities and imports them using the corresponding activity repository.
  *
  * @author denis
  */
@@ -32,6 +32,9 @@ public class BoredActivityProvider {
 
     @Value("${activity.provider.url}")
     private String url;
+
+    @Value("${activity.provider.fetch:10}")
+    private int fetchAmount;
 
     private void fetch() {
         ResponseEntity<BoredActivityRecord> responseEntity = restTemplate.getForEntity(url, BoredActivityRecord.class);
@@ -51,7 +54,7 @@ public class BoredActivityProvider {
             public void run() {
                 fetch();
                 activityCount++;
-                if (activityCount >= 10) {
+                if (activityCount >= fetchAmount) {
                     cancel();
                 }
             }

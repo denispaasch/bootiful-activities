@@ -32,7 +32,7 @@ public class BootifulActivitiesApp {
     @Bean
     public GroupedOpenApi activitiesOpenApi() {
         String[] paths = {"/api/v1/**"};
-        return GroupedOpenApi.builder().group("activities").pathsToMatch(paths)
+        return GroupedOpenApi.builder().group("bootiful-acitivities").pathsToMatch(paths)
                 .build();
     }
 }

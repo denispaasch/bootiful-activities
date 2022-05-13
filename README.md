@@ -1,6 +1,30 @@
-# TODO
-* Java 11 (or later).
-* Uses Spring Boot.
-* Is a RESTful service.
-* Includes some tests (full test coverage isn't necessary for this sample project).
-* Bonus (Optional): requests data from an external endpoint
+
+| Task                                                                             |                                                                                                                                                                                                                                                                                                                                |
+|----------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Java 11 (or later)                                                               | Java 17                                                                                                                                                                                                                                                                                                                        |
+| Uses Spring Boot                                                                 | Spring Boot 2.6.7                                                                                                                                                                                                                                                                                                              |
+| Is a RESTful service                                                             | See API entry point after starting the app: http://localhost:8080/api/v1                                                                                                                                                                                                                                                       |
+| Includes some tests (full test coverage isn't necessary for this sample project) | See [here](https://github.com/denispaasch/bootiful-activities/blob/master/padp.rest/src/test/java/be/dpa/bootiful/activities/padp/rest/ActivityControllerTest.java) and [here](https://github.com/denispaasch/bootiful-activities/blob/master/distribution/src/test/java/be/dpa/bootiful/activities/BootifulActivitiesIT.java) |
+| Bonus (Optional): requests data from an external endpoint                        | See [here](https://github.com/denispaasch/bootiful-activities/blob/master/sadp.bored/src/main/java/be/dpa/bootiful/activities/sadp/bored/BoredActivityProvider.java#L37)                                                                                                                                                       |
+
+# API entry point
+
+From there the activities and their participants are discoverable:
+
+http://localhost:8080/api/v1
+
+# Swagger-UI
+
+The API documentation can be found here after startup:
+
+http://localhost:8080/swagger-ui/index.html
+
+# Java code coverage
+
+After the build there is a report within target/site/jacoco.
+
+# H2 console
+
+http://localhost:8080/h2-console
+
+

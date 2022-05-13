@@ -5,6 +5,7 @@ import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -48,8 +49,11 @@ public class ActivityControllerTest {
     private static final String UPDATE_ACTIVITY_INVALID_JSON = "/updateActivityInvalid.json";
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
+    private static final String TYPE_SAD = "sad";
     private static final String AK_NETFLIX = "NETFLIX";
     private static final String ACTION_NETFLIX = "Netflix";
+    private static final String TYPE_SOFA = "sofa";
+    private static final String DETAILS_NETFLIX = "https://www.netflix.com";
     private static final String URL_ACTIVITIES = "http://localhost/api/v1/activities/";
     private static final String AK_LEARN_HOW_THE_INTERNET_WORKS = "INTERNET";
     private static final String URL_ACTIVITY_INTERNET = "http://localhost/api/v1/activities/INTERNET";
@@ -71,10 +75,12 @@ public class ActivityControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private Activity createActivity(String alternateKey, String action) {
+    private Activity createActivity(String alternateKey, String action, String type, String details) {
         Activity activity = new Activity();
         activity.setAction(action);
         activity.setAlternateKey(alternateKey);
+        activity.setType(type);
+        activity.setDetails(details);
         activity.setNoOfParticipants(1);
         return activity;
     }
@@ -89,32 +95,33 @@ public class ActivityControllerTest {
 
     @BeforeEach
     public void setUp() {
-        stareAtTheWallActivity = createActivity(AK_STARE, ACTION_STARE_AT_THE_WALL);
-        netflixActivity = createActivity(AK_NETFLIX, ACTION_NETFLIX);
+        stareAtTheWallActivity = createActivity(AK_STARE, ACTION_STARE_AT_THE_WALL, TYPE_SAD, StringUtils.EMPTY);
+        netflixActivity = createActivity(AK_NETFLIX, ACTION_NETFLIX, TYPE_SOFA, DETAILS_NETFLIX);
         tomBolaParticipant = createParticipant(AK_TOM_BOLA, TOM, BOLA);
     }
 
     @Test
-    public void testGetActivitiesSuccess() throws Exception {
-        Page<Activity> activityPage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
+    public void testGetNoActivities() throws Exception {
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(Page.empty());
         mockMvc.perform(get("/api/v1/activities"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.self.href", is("http://localhost/api/v1/activities")))
-                .andExpect(jsonPath("$.page.size", is(0)))
-                .andExpect(jsonPath("$.page.totalElements", is(0)))
-                .andExpect(jsonPath("$.page.totalPages", is(1)))
-                .andExpect(jsonPath("$.page.number", is(0)));
+                .andExpect(status().isNoContent());
+    }
 
-
+    @Test
+    public void testGetActivities() throws Exception {
+        Page<Activity> activityPage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
         when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityPage);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.activities[0].alternateKey", is(AK_STARE)))
                 .andExpect(jsonPath("$._embedded.activities[0].action", is(ACTION_STARE_AT_THE_WALL)))
+                .andExpect(jsonPath("$._embedded.activities[0].type", is(TYPE_SAD)))
+                .andExpect(jsonPath("$._embedded.activities[0].details", is(StringUtils.EMPTY)))
                 .andExpect(jsonPath("$._embedded.activities[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))))
                 .andExpect(jsonPath("$._embedded.activities[1].alternateKey", is(AK_NETFLIX)))
                 .andExpect(jsonPath("$._embedded.activities[1].action", is(ACTION_NETFLIX)))
+                .andExpect(jsonPath("$._embedded.activities[1].type", is(TYPE_SOFA)))
+                .andExpect(jsonPath("$._embedded.activities[1].details", is(DETAILS_NETFLIX)))
                 .andExpect(jsonPath("$._embedded.activities[1]._links.self.href", is(URL_ACTIVITIES.concat(AK_NETFLIX))));
     }
 
@@ -131,6 +138,14 @@ public class ActivityControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.alternateKey", is(AK_STARE)))
                 .andExpect(jsonPath("$.action", is(ACTION_STARE_AT_THE_WALL)));
+    }
+
+    @Test
+    public void testGetNoActivityParticipants() throws Exception {
+        when(activityService.getActivityParticipants(eq(AK_BIKE), eq(0), eq(5)))
+                .thenReturn(Page.empty());
+        mockMvc.perform(get("/api/v1/activities/".concat(AK_BIKE).concat("/participants")))
+                .andExpect(status().isNoContent());
     }
 
     @Test
