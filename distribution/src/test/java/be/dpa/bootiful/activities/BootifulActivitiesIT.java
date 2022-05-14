@@ -135,7 +135,7 @@ class BootifulActivitiesIT {
     }
 
     @Test
-    public void testImportActivity() {
+    public void testImportActivities() {
         EasyRandomParameters parameters = new EasyRandomParameters()
             .randomize(f -> StringUtils.equals(f.getName(), "alternateKey"), new AlternateKeyRandomizer())
             .randomize(f -> StringUtils.equals(f.getName(), "externalKey"), new AlternateKeyRandomizer())
