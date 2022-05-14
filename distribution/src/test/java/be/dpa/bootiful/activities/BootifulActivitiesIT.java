@@ -1,9 +1,17 @@
 package be.dpa.bootiful.activities;
 
+import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
+import be.dpa.bootiful.activities.dm.spi.IActivityImportRepository;
 import be.dpa.bootiful.activities.sadp.bored.BoredActivityProvider;
-import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.sadp.jpa.IActivityEntityRepository;
+import be.dpa.bootiful.activities.sadp.jpa.IParticipantEntityRepository;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
+import be.dpa.bootiful.activities.sadp.jpa.entities.ParticipantEntity;
 import org.apache.commons.collections4.IteratorUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jeasy.random.EasyRandom;
+import org.jeasy.random.EasyRandomParameters;
+import org.jeasy.random.FieldPredicates;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +28,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,17 +48,17 @@ class BootifulActivitiesIT {
 
     private static final int ACTIVITY_COUNT = 100;
 
-    private static final String ACTION_NOTHING = "Do nothing";
-
-    private static final String TYPE_NOTHING = "nothing";
-
-    private static final String URL_NOTHING = "https://www.giphy.com";
-
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private IActivityEntityRepository activityEntityRepository;
+
+    @Autowired
+    private IParticipantEntityRepository participantEntityRepository;
+
+    @Autowired
+    private IActivityImportRepository activityImportRepository;
 
     @MockBean
     private BoredActivityProvider boredActivityProvider;
@@ -65,21 +72,6 @@ class BootifulActivitiesIT {
         }
     }
 
-
-    private ActivityEntity createActivityEntity(int index) {
-        ActivityEntity activityEntity = new ActivityEntity();
-        String alternateKey = UUID.randomUUID().toString();
-        activityEntity.setAlternateKey(alternateKey);
-        activityEntity.setExternalKey(alternateKey);
-
-        String suffix = String.valueOf(index);
-        activityEntity.setAction(ACTION_NOTHING.concat(suffix));
-        activityEntity.setType(TYPE_NOTHING.concat(suffix));
-        activityEntity.setNoOfParticipants(1);
-        activityEntity.setDetails(URL_NOTHING);
-        return activityEntity;
-    }
-
     @BeforeEach
     public void setUp() {
         activityEntityRepository.deleteAll();
@@ -87,8 +79,14 @@ class BootifulActivitiesIT {
 
     @Test
     public void testGetActivities() throws Exception {
+        EasyRandomParameters parameters = new EasyRandomParameters()
+                .excludeField(FieldPredicates.named("id").and(FieldPredicates.inClass(ActivityEntity.class)))
+                .excludeField(FieldPredicates.named("participantAssignments").and(FieldPredicates.inClass(ActivityEntity.class)))
+                .randomize(f -> StringUtils.equals(f.getName(), "alternateKey"), new AlternateKeyRandomizer())
+                .randomize(Integer.class, new NoOfParticipantsRandomizer(1, 10));
+        EasyRandom generator = new EasyRandom(parameters);
         List<ActivityEntity> activityEntities =
-                IntStream.range(0, ACTIVITY_COUNT).mapToObj(this::createActivityEntity).collect(Collectors.toList());
+                generator.objects(ActivityEntity.class, ACTIVITY_COUNT).collect(Collectors.toList());
         activityEntityRepository.saveAll(activityEntities);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
@@ -96,7 +94,6 @@ class BootifulActivitiesIT {
                 .andExpect(jsonPath("$.page.totalElements", is(100)))
                 .andExpect(jsonPath("$.page.totalPages", is(20)))
                 .andExpect(jsonPath("$.page.number", is(0)));
-
         mockMvc.perform(get("/api/v1/activities?page=1&size=50"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -137,4 +134,26 @@ class BootifulActivitiesIT {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void testImportActivity() {
+        EasyRandomParameters parameters = new EasyRandomParameters()
+            .randomize(f -> StringUtils.equals(f.getName(), "alternateKey"), new AlternateKeyRandomizer())
+            .randomize(f -> StringUtils.equals(f.getName(), "externalKey"), new AlternateKeyRandomizer())
+            .randomize(Integer.class, new NoOfParticipantsRandomizer(1, 10));
+        EasyRandom generator = new EasyRandom(parameters);
+        List<ActivityRecord> activityRecords =
+                generator.objects(ActivityRecord.class, 5).collect(Collectors.toList());
+        Integer participantSum =
+                activityRecords.stream().map(ActivityRecord::getNoOfParticipants)
+                        .collect(Collectors.summingInt(Integer::intValue));
+        activityRecords.forEach(activityImportRepository::importActivity);
+
+        Iterable<ActivityEntity> activityEntityIterable = activityEntityRepository.findAll();
+        List<ActivityEntity> activityEntities = IteratorUtils.toList(activityEntityIterable.iterator());
+        assertEquals(5, activityEntities.size());
+
+        Iterable<ParticipantEntity> participantEntityIterable = participantEntityRepository.findAll();
+        List<ParticipantEntity> participantEntities = IteratorUtils.toList(participantEntityIterable.iterator());
+        assertEquals(participantSum, participantEntities.size());
+    }
 }
