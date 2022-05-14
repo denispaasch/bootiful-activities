@@ -1,4 +1,4 @@
-package be.dpa.bootiful.activities.padp.rest;
+package be.dpa.bootiful.activities.padp.rest.util;
 
 /**
  * Relation constants.

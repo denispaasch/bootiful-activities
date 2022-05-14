@@ -32,13 +32,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
-import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_ACTIVITIES;
-import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_ACTIVITY;
-import static be.dpa.bootiful.activities.padp.rest.RelationConstants.RELATION_PARTICIPANTS;
+import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITIES;
+import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITY;
+import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_PARTICIPANTS;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -53,6 +52,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 class ActivityController {
 
     private final IActivityService activityService;
+
+    private final ActivityRelationService activityRelationService;
 
     private final PagedResourcesAssembler<Activity> activityPagedResourcesAssembler;
 
@@ -147,14 +148,14 @@ class ActivityController {
         @Valid @RequestBody ActivityRequest activityRequest) {
         Activity activity = activityService.newActivity(activityRequest);
         addActivityLinks(activity);
-        try {
-            URI activityUri = new URI(activity.getRequiredLink(IanaLinkRelations.SELF).getHref());
-            return ResponseEntity.created(activityUri).body(activity);
-        } catch (URISyntaxException e) {
-            return ResponseEntity.badRequest().body(
-                    String.format("Failed to create URI to new activity with alternate key %s",
-                            activity.getAlternateKey()));
+        Optional<URI> activityUri = activityRelationService.convertToUri(
+                activity.getRequiredLink(IanaLinkRelations.SELF));
+        if (activityUri.isPresent()) {
+            return ResponseEntity.created(activityUri.get()).body(activity);
         }
+        return ResponseEntity.badRequest().body(
+                String.format("Failed to create URI to new activity with alternate key %s",
+                        activity.getAlternateKey()));
     }
 
     @Operation(summary = "Updates an activity")
@@ -168,12 +169,12 @@ class ActivityController {
                                             @PathVariable String alternateKey) {
         activityService.updateActivity(alternateKey, activityRequest);
         Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();
-        try {
-            return ResponseEntity.noContent().location(new URI(activityLink.getHref())).build();
-        } catch (URISyntaxException e) {
-            return ResponseEntity.badRequest().body(
-                    String.format("Failed to create URI to updated activity with alternate key %s", alternateKey));
+        Optional<URI> activityUri = activityRelationService.convertToUri(activityLink);
+        if (activityUri.isPresent()) {
+            return ResponseEntity.noContent().location(activityUri.get()).build();
         }
+        return ResponseEntity.badRequest().body(
+                String.format("Failed to create URI to updated activity with alternate key %s", alternateKey));
     }
 
     @Operation(summary = "Deletes an activity by its alternate key")

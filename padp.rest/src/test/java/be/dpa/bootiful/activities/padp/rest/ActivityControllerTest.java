@@ -12,11 +12,14 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.Link;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,16 +29,17 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,6 +75,9 @@ public class ActivityControllerTest {
 
     @MockBean
     private IActivityService activityService;
+
+    @SpyBean
+    private ActivityRelationService activityRelationService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -193,13 +200,30 @@ public class ActivityControllerTest {
     }
 
     @Test
-    public void testNewActivityBadRequest() throws Exception {
+    public void testNewActivityInvalidRequest() throws Exception {
         String newActivityInvalidJson = readFile(NEW_ACTIVITY_INVALID_JSON);
         mockMvc.perform(post("/api/v1/activities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(newActivityInvalidJson)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testNewActivityInvalidLink() throws Exception {
+        Activity activity = new Activity();
+        activity.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
+        when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activity);
+        doReturn(Optional.empty()).when(activityRelationService).convertToUri(any(Link.class));
+        String newActivityJson = readFile(NEW_ACTIVITY_JSON);
+        MvcResult mvcResult = mockMvc.perform(post("/api/v1/activities")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newActivityJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        assertTrue(StringUtils.isNotEmpty(content));
     }
 
     @Test
@@ -221,13 +245,28 @@ public class ActivityControllerTest {
     }
 
     @Test
-    public void testUpdateActivityBadRequest() throws Exception {
+    public void testUpdateActivityInvalidRequest() throws Exception {
         String updateActivityInvalidJson = readFile(UPDATE_ACTIVITY_INVALID_JSON);
         mockMvc.perform(put("/api/v1/activities/BIKE")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateActivityInvalidJson)
                         .characterEncoding(StandardCharsets.UTF_8))
                 .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void testUpdateActivityInvalidLink() throws Exception {
+        doReturn(Optional.empty()).when(activityRelationService).convertToUri(any(Link.class));
+        String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
+        MvcResult mvcResult = mockMvc.perform(put("/api/v1/activities/BIKE")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updateActivityJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+        String content = mvcResult.getResponse().getContentAsString();
+        assertTrue(StringUtils.isNotEmpty(content));
     }
 
     @Test
