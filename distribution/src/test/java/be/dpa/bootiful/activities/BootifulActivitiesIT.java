@@ -40,7 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -141,9 +140,7 @@ class BootifulActivitiesIT {
         mockMvc.perform(get("/api/v1/activities?search=type==nature;action=='Go into the trees'"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.activities[0].type", is("nature")))
-                .andExpect(jsonPath("$._embedded.activities[0].action", is("Go into the trees")))
-                .andDo(print());
-
+                .andExpect(jsonPath("$._embedded.activities[0].action", is("Go into the trees")));
     }
 
     private void assertActivityEntity(ActivityEntity activityEntity,
