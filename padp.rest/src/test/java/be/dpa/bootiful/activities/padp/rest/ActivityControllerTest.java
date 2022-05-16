@@ -30,6 +30,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
@@ -109,7 +110,7 @@ public class ActivityControllerTest {
 
     @Test
     public void testGetNoActivities() throws Exception {
-        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(Page.empty());
+        when(activityService.getActivities(any(Optional.class), anyInt(), anyInt())).thenReturn(Page.empty());
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isNoContent());
     }
@@ -117,7 +118,7 @@ public class ActivityControllerTest {
     @Test
     public void testGetActivities() throws Exception {
         Page<Activity> activityPage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity, netflixActivity), Pageable.ofSize(2), 2L);
-        when(activityService.getActivities(anyInt(), anyInt())).thenReturn(activityPage);
+        when(activityService.getActivities(any(Optional.class), anyInt(), anyInt())).thenReturn(activityPage);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$._embedded.activities[0].alternateKey", is(AK_STARE)))

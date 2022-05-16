@@ -40,6 +40,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -89,16 +90,28 @@ class BootifulActivitiesIT {
         participantEntityRepository.deleteAll();
     }
 
-    @Test
-    public void testGetActivities() throws Exception {
+    private EasyRandom createEasyRandom() {
         EasyRandomParameters parameters = new EasyRandomParameters()
                 .excludeField(FieldPredicates.named("id").and(FieldPredicates.inClass(ActivityEntity.class)))
                 .excludeField(FieldPredicates.named("participantAssignments").and(FieldPredicates.inClass(ActivityEntity.class)))
                 .randomize(f -> StringUtils.equals(f.getName(), "alternateKey"), new AlternateKeyRandomizer())
                 .randomize(Integer.class, new NoOfParticipantsRandomizer(1, 10));
-        EasyRandom generator = new EasyRandom(parameters);
-        List<ActivityEntity> activityEntities =
-                generator.objects(ActivityEntity.class, ACTIVITY_COUNT).collect(Collectors.toList());
+        return new EasyRandom(parameters);
+    }
+
+    private ActivityEntity generateRandomActivity() {
+        EasyRandom generator = createEasyRandom();
+        return generator.nextObject(ActivityEntity.class);
+    }
+
+    private List<ActivityEntity> generateRandomActivities(int activityCount) {
+        EasyRandom generator = createEasyRandom();
+        return generator.objects(ActivityEntity.class, activityCount).collect(Collectors.toList());
+    }
+
+    @Test
+    public void testGetActivities() throws Exception {
+        List<ActivityEntity> activityEntities = generateRandomActivities(ACTIVITY_COUNT);
         activityEntityRepository.saveAll(activityEntities);
         mockMvc.perform(get("/api/v1/activities"))
                 .andExpect(status().isOk())
@@ -114,6 +127,24 @@ class BootifulActivitiesIT {
                 .andExpect(jsonPath("$.page.number", is(1)));
     }
 
+    @Test
+    public void testGetActivitiesWithSearch() throws Exception {
+        List<ActivityEntity> activityEntities = generateRandomActivities(ACTIVITY_COUNT);
+        ActivityEntity activityEntity = activityEntities.get(0);
+        activityEntity.setAction("Go into the trees");
+        activityEntity.setType("nature");
+        activityEntityRepository.saveAll(activityEntities);
+
+        mockMvc.perform(get("/api/v1/activities?search=type==ISURELYDONTEXIST"))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/v1/activities?search=type==nature;action=='Go into the trees'"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.activities[0].type", is("nature")))
+                .andExpect(jsonPath("$._embedded.activities[0].action", is("Go into the trees")))
+                .andDo(print());
+
+    }
 
     private void assertActivityEntity(ActivityEntity activityEntity,
                                       String action, String type, int noOfParticipants, String details) {
@@ -151,19 +182,9 @@ class BootifulActivitiesIT {
                 .andExpect(status().isBadRequest());
     }
 
-
-    private ActivityEntity createRandomActivity() {
-        EasyRandomParameters parameters = new EasyRandomParameters()
-                .excludeField(FieldPredicates.named("id").and(FieldPredicates.inClass(ActivityEntity.class)))
-                .randomize(f -> StringUtils.equals(f.getName(), "alternateKey"), new AlternateKeyRandomizer())
-                .randomize(Integer.class, new NoOfParticipantsRandomizer(1, 10));
-        EasyRandom generator = new EasyRandom(parameters);
-        return activityEntityRepository.save(generator.nextObject(ActivityEntity.class));
-    }
-
     @Test
     public void testUpdateActivity() throws Exception {
-        ActivityEntity activityEntity = createRandomActivity();
+        ActivityEntity activityEntity =  activityEntityRepository.save(generateRandomActivity());
         String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
         String updateActivityUrl = "/api/v1/activities/".concat(activityEntity.getAlternateKey());
         mockMvc.perform(put(updateActivityUrl)
@@ -215,7 +236,7 @@ class BootifulActivitiesIT {
 
     @Test
     public void testDeleteActivity() throws Exception {
-        ActivityEntity activityEntity = createRandomActivity();
+        ActivityEntity activityEntity = activityEntityRepository.save(generateRandomActivity());
         mockMvc.perform(delete("/api/v1/activities/{alternateKey}", activityEntity.getAlternateKey()))
                 .andExpect(status().isNoContent());
         Iterable<ActivityEntity> activityEntityIterable = activityEntityRepository.findAll();

@@ -11,7 +11,7 @@ import java.util.Optional;
  */
 public interface IActivityRepository {
 
-    Page<ActivityRecord> getAll(int page, int size);
+    Page<ActivityRecord> getAll(Optional<String> search, int page, int size);
 
     Optional<ActivityRecord> getBy(String alternateKey);
 

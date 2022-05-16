@@ -6,16 +6,18 @@ import be.dpa.bootiful.activities.dm.spi.ParticipantRecord;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityParticipantEntity;
 import be.dpa.bootiful.activities.sadp.jpa.entities.ParticipantEntity;
+import be.dpa.bootiful.activities.sadp.jpa.filter.CustomRsqlVisitor;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IActivityEntityMapper;
 import be.dpa.bootiful.activities.sadp.jpa.mapper.IParticipantEntityMapper;
+import cz.jirutka.rsql.parser.RSQLParser;
+import cz.jirutka.rsql.parser.ast.Node;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,10 +42,20 @@ public class ActivityRepository implements IActivityRepository {
 
     private final IParticipantEntityRepository participantEntityRepository;
 
-    @Override
-    public Page<ActivityRecord> getAll(int page, int size) {
+    private Page<ActivityEntity> doGetAll(Optional<String> search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ActivityEntity> activityEntities = activityEntityRepository.findByOrderByTypeAscActionAsc(pageable);
+        if (search.isPresent()) {
+            Node rootNode = new RSQLParser().parse(search.get());
+            Specification<ActivityEntity> specification = rootNode.accept(new CustomRsqlVisitor<>());
+            // Sort.by((Sort.Direction.ASC, "type", "action");
+            return activityEntityRepository.findAll(specification, pageable);
+        }
+        return activityEntityRepository.findByOrderByTypeAscActionAsc(pageable);
+    }
+
+    @Override
+    public Page<ActivityRecord> getAll(Optional<String> search, int page, int size) {
+        Page<ActivityEntity> activityEntities = doGetAll(search, page, size);
         return activityEntities.map(activityEntityMapper::toActivityRecord);
     }
 

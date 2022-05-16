@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.IanaLinkRelations;
@@ -69,9 +70,12 @@ class ActivityController {
     })
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<PagedModel<Activity>> getActivities(
+            @Parameter(description = "An optional search string, f.e. type==busywork")
+            @RequestParam(defaultValue = "") String search,
             @Parameter(description = "The page index") @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "The page size") @RequestParam(defaultValue = "5") Integer size) {
-        Page<Activity> activities = activityService.getActivities(page, size);
+        Optional<String> optSearch = StringUtils.isEmpty(search) ? Optional.empty() : Optional.of(search);
+        Page<Activity> activities = activityService.getActivities(optSearch, page, size);
         List<Activity> content = activities.getContent();
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
@@ -102,7 +106,7 @@ class ActivityController {
         Link activityLink = linkTo(methodOn(ActivityController.class)
                 .getActivityBy(alternateKey)).withRel(RELATION_ACTIVITY);
         Link activitiesLink = linkTo(methodOn(ActivityController.class)
-                .getActivities(null, null)).withRel(RELATION_ACTIVITIES).expand();
+                .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
         participant.add(activityLink, activitiesLink);
     }
 
@@ -133,7 +137,7 @@ class ActivityController {
         Link participantsLink = linkTo(methodOn(ActivityController.class)
                 .getParticipantsBy(activity.getAlternateKey(), null, null)).withRel(RELATION_PARTICIPANTS).expand();
         Link activitiesLink = linkTo(methodOn(ActivityController.class)
-                .getActivities(null, null)).withRel(RELATION_ACTIVITIES).expand();
+                .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
         activity.add(selfLink, participantsLink, activitiesLink);
     }
 

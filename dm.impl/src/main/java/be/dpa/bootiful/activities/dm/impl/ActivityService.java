@@ -32,8 +32,8 @@ public class ActivityService implements IActivityService {
     private final IActivityRepository activityRepository;
 
     @Override
-    public Page<Activity> getActivities(int page, int size) {
-        Page<ActivityRecord> activityRecords = activityRepository.getAll(page, size);
+    public Page<Activity> getActivities(Optional<String> search, int page, int size) {
+        Page<ActivityRecord> activityRecords = activityRepository.getAll(search, page, size);
         return activityRecords.map(activityMapper::toActivityResponse);
     }
 

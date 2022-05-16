@@ -29,7 +29,7 @@ class ApiEntrypointController {
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<ApiEntrypoint> getRoot() {
         ApiEntrypoint apiEntryPoint = new ApiEntrypoint();
-        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(null, null))
+        Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(null, null, null))
                 .withRel(RELATION_ACTIVITIES).expand();
         apiEntryPoint.add(activitiesLink);
         return ResponseEntity.ok(apiEntryPoint);
