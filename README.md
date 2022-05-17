@@ -1,3 +1,9 @@
+# Summary
+
+This app gets activity suggestions from an external endpoint and generates participants for
+them using a faker library. On each startup it fetches a configurable amount of activities more.
+It stores them into an H2 database which obtains its schema using Flyway.
+Both the activities and their participants can be accessed via REST using the below API entry point.
 
 | Task                                                                             |                                                                                                                                                                                                                                                                                                                             |
 |----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -6,6 +12,7 @@
 | Is a RESTful service                                                             | See API entry point after starting the app: http://localhost:8080/api/v1                                                                                                                                                                                                                                                    |
 | Includes some tests (full test coverage isn't necessary for this sample project) | See [here](https://github.com/denispaasch/bootiful-activities/blob/master/padp.rest/src/test/java/be/dpa/bootiful/activities/padp/rest/ActivityControllerTest.java) and [here](https://github.com/denispaasch/bootiful-activities/blob/master/distribution/src/test/java/be/dpa/bootiful/activities/BootifulActivitiesIT.java) |
 | Bonus (Optional): requests data from an external endpoint                        | See [here](https://github.com/denispaasch/bootiful-activities/blob/master/sadp.bored/src/main/java/be/dpa/bootiful/activities/sadp/bored/BoredActivityProvider.java)                                                                                                                                                       |
+
 
 # API entry point
 
