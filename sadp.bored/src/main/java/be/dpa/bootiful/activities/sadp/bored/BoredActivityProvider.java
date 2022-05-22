@@ -6,13 +6,15 @@ import be.dpa.bootiful.activities.sadp.bored.mapper.IBoredActivityRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.stream.IntStream;
 
 /**
  * Fetches bored activities and imports them using the corresponding activity repository.
@@ -22,6 +24,7 @@ import java.util.TimerTask;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@EnableAsync
 public class BoredActivityProvider {
 
     private final RestTemplate restTemplate;
@@ -36,30 +39,15 @@ public class BoredActivityProvider {
     @Value("${activity.provider.fetch:10}")
     private int fetchAmount;
 
-    private void fetch() {
+    private void fetch(int fetchIx) {
         ResponseEntity<BoredActivityRecord> responseEntity = restTemplate.getForEntity(url, BoredActivityRecord.class);
         ActivityRecord activity = boredActivityMapper.toActivityRecord(responseEntity.getBody());
+        log.info("Importing bored activity with type '{}' and action '{}'", activity.getType(), activity.getAction());
         activityImportRepository.importActivity(activity);
     }
 
-    /**
-     * Scheduled fetching of activities from the bored API.
-     */
-    @PostConstruct
-    public void scheduleFetch() {
-        TimerTask fetchTask = new TimerTask() {
-            private int activityCount = 0;
-
-            @Override
-            public void run() {
-                fetch();
-                activityCount++;
-                if (activityCount >= fetchAmount) {
-                    cancel();
-                }
-            }
-        };
-        Timer timer = new Timer("ActivityProvider-Timer");
-        timer.scheduleAtFixedRate(fetchTask, 1000L, 1000L);
+    @Async
+    public void fetch() {
+        IntStream.range(0, fetchAmount).forEach(this::fetch);
     }
 }
