@@ -134,6 +134,12 @@ public class ActivityControllerTest {
     }
 
     @Test
+    public void testGetActivitiesInvalidSearch() throws Exception {
+        mockMvc.perform(get("/api/v1/activities?search=id==2"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void testGetNonExistentActivity() throws Exception {
         mockMvc.perform(get("/api/v1/activities/IDONTEXIST"))
                 .andExpect(status().isNotFound());
