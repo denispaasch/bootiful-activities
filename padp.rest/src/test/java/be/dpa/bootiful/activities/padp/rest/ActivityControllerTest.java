@@ -140,6 +140,19 @@ public class ActivityControllerTest {
     }
 
     @Test
+    public void testGetFilteredActivities() throws Exception {
+        Page<Activity> activityPage = new PageImpl<>(Arrays.asList(stareAtTheWallActivity), Pageable.ofSize(1), 1L);
+        when(activityService.getActivities(any(Optional.class), anyInt(), anyInt())).thenReturn(activityPage);
+        mockMvc.perform(get("/api/v1/activities?search=type==".concat(TYPE_SAD)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$._embedded.activities[0].alternateKey", is(AK_STARE)))
+                .andExpect(jsonPath("$._embedded.activities[0].action", is(ACTION_STARE_AT_THE_WALL)))
+                .andExpect(jsonPath("$._embedded.activities[0].type", is(TYPE_SAD)))
+                .andExpect(jsonPath("$._embedded.activities[0].details", is(StringUtils.EMPTY)))
+                .andExpect(jsonPath("$._embedded.activities[0]._links.self.href", is(URL_ACTIVITIES.concat(AK_STARE))));
+    }
+
+    @Test
     public void testGetNonExistentActivity() throws Exception {
         mockMvc.perform(get("/api/v1/activities/IDONTEXIST"))
                 .andExpect(status().isNotFound());
