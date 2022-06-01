@@ -19,6 +19,7 @@
 		<mapstruct.version>1.4.2.Final</mapstruct.version>
 		<springdoc.version>1.6.8</springdoc.version>
 		<commons-collections4.version>4.4</commons-collections4.version>
+		<rsql-parser.version>2.1.0</rsql-parser.version>
 		<jacoco.version>0.8.8</jacoco.version>
 	</properties>
 
@@ -125,6 +126,11 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-collections4</artifactId>
 				<version>${commons-collections4.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>cz.jirutka.rsql</groupId>
+				<artifactId>rsql-parser</artifactId>
+				<version>${rsql-parser.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

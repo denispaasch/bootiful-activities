@@ -66,12 +66,21 @@ public class ActivityRepository implements IActivityRepository {
     }
 
     @Override
-    public Page<ParticipantRecord> getParticipantsBy(String activityAlternateKey, int page, int size) {
+    public Page<ParticipantRecord> getParticipantsBy(String alternateKey, int page, int size) {
         Page<ActivityParticipantEntity> activityParticipants =
                 activityParticipantEntityRepository
-                        .findActivityParticipants(activityAlternateKey, PageRequest.of(page, size));
+                        .findActivityParticipants(alternateKey, PageRequest.of(page, size));
         return activityParticipants.map(activityParticipantEntity ->
                 participantEntityMapper.toParticipantRecord(activityParticipantEntity.getParticipant()));
+    }
+
+    @Override
+    public ParticipantRecord assignParticipant(String alternateKey, ParticipantRecord participantRecord) {
+
+        // TODO check if the participant already exists
+        // assign it to the passed activity
+
+        return null;
     }
 
     private ActivityRecord doSave(ActivityEntity activityEntity) {

@@ -4,6 +4,7 @@ import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
+import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
 import be.dpa.bootiful.activities.dm.impl.mapper.IActivityMapper;
 import be.dpa.bootiful.activities.dm.impl.mapper.IParticipantMapper;
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
@@ -69,6 +70,11 @@ public class ActivityService implements IActivityService {
     @Override
     public boolean deleteActivity(String alternateKey) {
         return activityRepository.delete(alternateKey) > 0;
+    }
+
+    @Override
+    public Participant assignParticipant(String alternateKey, ParticipantRequest participantRequest) {
+        return null;
     }
 
 

@@ -15,8 +15,8 @@ public interface IActivityService {
      * Gets a list of activities.
      *
      * @param search an optional search string
-     * @param page the page index
-     * @param size the page size
+     * @param page   the page index
+     * @param size   the page size
      * @return a list of activities
      */
     Page<Activity> getActivities(Optional<String> search, int page, int size);
@@ -64,4 +64,14 @@ public interface IActivityService {
      * @return {@code true} if the activity was deleted, otherwise {@code false}
      */
     boolean deleteActivity(String alternateKey);
+
+
+    /**
+     * Assigns a participant to an activity.
+     *
+     * @param alternateKey       the alternate key of the activity
+     * @param participantRequest a participant request
+     * @return the assigned participant
+     */
+    Participant assignParticipant(String alternateKey, ParticipantRequest participantRequest);
 }

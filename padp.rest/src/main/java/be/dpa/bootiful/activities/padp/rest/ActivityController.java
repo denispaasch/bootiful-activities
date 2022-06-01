@@ -4,6 +4,8 @@ import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
+import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
+import be.dpa.bootiful.activities.padp.rest.validation.SearchConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,10 +20,13 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +34,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -50,6 +57,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RestController
 @RequestMapping("/api/v1/activities")
 @RequiredArgsConstructor
+@Validated
 class ActivityController {
 
     private final IActivityService activityService;
@@ -59,6 +67,12 @@ class ActivityController {
     private final PagedResourcesAssembler<Activity> activityPagedResourcesAssembler;
 
     private final PagedResourcesAssembler<Participant> participantPagedResourcesAssembler;
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
     @Operation(summary = "Gets a paged model containing activities")
     @ApiResponses(value = {
@@ -70,7 +84,7 @@ class ActivityController {
     })
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<PagedModel<Activity>> getActivities(
-            @Parameter(description = "An optional search string, f.e. type==busywork")
+            @Valid @SearchConstraint @Parameter(description = "An optional search string, f.e. type==busywork")
             @RequestParam(defaultValue = "") String search,
             @Parameter(description = "The page index") @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "The page size") @RequestParam(defaultValue = "5") Integer size) {
@@ -117,18 +131,29 @@ class ActivityController {
                 schema = @Schema(implementation = PagedModel.class))}),
         @ApiResponse(responseCode = "204", description = "Sadly there are participants for the given activity")
     })
-    @GetMapping(value = "/{activityAlternateKey}/participants",
+    @GetMapping(value = "/{alternateKey}/participants",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String activityAlternateKey,
+    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String alternateKey,
         @RequestParam(defaultValue = "0") Integer page,
         @RequestParam(defaultValue = "5") Integer size) {
-        Page<Participant> participants = activityService.getActivityParticipants(activityAlternateKey, page, size);
+        Page<Participant> participants = activityService.getActivityParticipants(alternateKey, page, size);
         List<Participant> content = participants.getContent();
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
         }
-        content.forEach(participant -> addParticipantLinks(participant, activityAlternateKey));
+        content.forEach(participant -> addParticipantLinks(participant, alternateKey));
         return ResponseEntity.ok(participantPagedResourcesAssembler.toModel(participants, p -> p));
+    }
+
+    @PostMapping(value = "/{alternateKey}/participants",
+            produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<Participant> assignParticipant(@PathVariable String alternateKey,
+                                                         @RequestBody ParticipantRequest participantRequest) {
+        Participant participant = activityService.assignParticipant(alternateKey, participantRequest);
+
+        // TODO add links
+
+        return ResponseEntity.ok(participant);
     }
 
     private void addActivityLinks(Activity activity) {

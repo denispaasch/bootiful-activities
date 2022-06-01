@@ -1,6 +1,7 @@
 package be.dpa.bootiful.activities.dm.impl.mapper;
 
 import be.dpa.bootiful.activities.dm.api.Participant;
+import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
 import be.dpa.bootiful.activities.dm.spi.ParticipantRecord;
 import org.mapstruct.Mapper;
 
@@ -13,5 +14,7 @@ import org.mapstruct.Mapper;
 public interface IParticipantMapper {
 
     Participant toParticipant(ParticipantRecord participantRecord);
+
+    ParticipantRecord toParticipantRecord(ParticipantRequest participantRequest);
 
 }

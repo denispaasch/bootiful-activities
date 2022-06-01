@@ -15,7 +15,9 @@ public interface IActivityRepository {
 
     Optional<ActivityRecord> getBy(String alternateKey);
 
-    Page<ParticipantRecord> getParticipantsBy(String activityAlternateKey, int page, int size);
+    Page<ParticipantRecord> getParticipantsBy(String alternateKey, int page, int size);
+
+    ParticipantRecord assignParticipant(String alternateKey, ParticipantRecord participantRecord);
 
     ActivityRecord save(ActivityRecord activity);
 
