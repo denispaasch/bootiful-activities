@@ -33,7 +33,7 @@ public class SearchValidator implements ConstraintValidator<SearchConstraint, St
         Node rootNode = new RSQLParser().parse(search);
         Set<String> filterFields = rootNode.accept(new SearchVisitor());
         List<String> invalidFilterFields = filterFields.stream()
-                .filter(field -> ALLOWED_FILTER_FIELDS.contains(field)).collect(Collectors.toList());
+                .filter(field -> !ALLOWED_FILTER_FIELDS.contains(field)).collect(Collectors.toList());
         if (CollectionUtils.isEmpty(invalidFilterFields)) {
             return true;
         }
