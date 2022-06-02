@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class ActivityRelationServiceTest {
+public class RelationServiceTest {
 
     private static final String GOOD_LINK = "https://www.giphy.com";
 
@@ -27,9 +27,9 @@ public class ActivityRelationServiceTest {
 
     @Test
     public void testConvertGoodLinkToUri() throws MalformedURLException {
-        ActivityRelationService activityRelationService = new ActivityRelationService();
+        RelationService relationService = new RelationService();
         when(link.getHref()).thenReturn(GOOD_LINK);
-        Optional<URI> optUri = activityRelationService.convertToUri(link);
+        Optional<URI> optUri = relationService.convertToUri(link);
         URI uri = optUri.orElse(null);
         assertNotNull(uri);
         assertEquals(GOOD_LINK, uri.toURL().toString());
@@ -37,7 +37,7 @@ public class ActivityRelationServiceTest {
 
     @Test
     public void testConvertInvalidLinkToUri() {
-        ActivityRelationService activityRelationService = new ActivityRelationService();
+        RelationService activityRelationService = new RelationService();
         when(link.getHref()).thenReturn(INVALID_LINK);
         Optional<URI> optUri = activityRelationService.convertToUri(link);
         assertFalse(optUri.isPresent());

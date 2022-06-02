@@ -13,4 +13,6 @@ public interface IParticipantEntityMapper {
 
     ParticipantRecord toParticipantRecord(ParticipantEntity participantEntity);
 
+    ParticipantEntity toParticipantEntity(ParticipantRecord participantRecord);
+
 }

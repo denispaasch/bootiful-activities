@@ -2,6 +2,7 @@ package be.dpa.bootiful.activities.dm.spi;
 
 import org.springframework.data.domain.Page;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -17,7 +18,9 @@ public interface IActivityRepository {
 
     Page<ParticipantRecord> getParticipantsBy(String alternateKey, int page, int size);
 
-    ParticipantRecord assignParticipant(String alternateKey, ParticipantRecord participantRecord);
+    List<ParticipantRecord> getParticipantsBy(String alternateKey);
+
+    ParticipantRecord newParticipant(String alternateKey, ParticipantRecord participantRecord);
 
     ActivityRecord save(ActivityRecord activity);
 

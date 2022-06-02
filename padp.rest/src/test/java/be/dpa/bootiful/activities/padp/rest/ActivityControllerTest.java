@@ -30,7 +30,6 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
@@ -78,7 +77,7 @@ public class ActivityControllerTest {
     private IActivityService activityService;
 
     @SpyBean
-    private ActivityRelationService activityRelationService;
+    private RelationService relationService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -234,7 +233,7 @@ public class ActivityControllerTest {
         Activity activity = new Activity();
         activity.setAlternateKey(AK_LEARN_HOW_THE_INTERNET_WORKS);
         when(activityService.newActivity(any(ActivityRequest.class))).thenReturn(activity);
-        doReturn(Optional.empty()).when(activityRelationService).convertToUri(any(Link.class));
+        doReturn(Optional.empty()).when(relationService).convertToUri(any(Link.class));
         String newActivityJson = readFile(NEW_ACTIVITY_JSON);
         MvcResult mvcResult = mockMvc.perform(post("/api/v1/activities")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -277,7 +276,7 @@ public class ActivityControllerTest {
 
     @Test
     public void testUpdateActivityInvalidLink() throws Exception {
-        doReturn(Optional.empty()).when(activityRelationService).convertToUri(any(Link.class));
+        doReturn(Optional.empty()).when(relationService).convertToUri(any(Link.class));
         String updateActivityJson = readFile(UPDATE_ACTIVITY_JSON);
         MvcResult mvcResult = mockMvc.perform(put("/api/v1/activities/BIKE")
                         .contentType(MediaType.APPLICATION_JSON)

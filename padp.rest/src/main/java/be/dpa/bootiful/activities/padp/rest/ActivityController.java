@@ -5,6 +5,8 @@ import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
 import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
+import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
+import be.dpa.bootiful.activities.dm.api.exception.InvalidParticipantException;
 import be.dpa.bootiful.activities.padp.rest.validation.SearchConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
@@ -62,15 +65,16 @@ class ActivityController {
 
     private final IActivityService activityService;
 
-    private final ActivityRelationService activityRelationService;
+    private final RelationService relationService;
 
     private final PagedResourcesAssembler<Activity> activityPagedResourcesAssembler;
 
     private final PagedResourcesAssembler<Participant> participantPagedResourcesAssembler;
 
-    @ExceptionHandler(ConstraintViolationException.class)
+    @ExceptionHandler(value = { ConstraintViolationException.class,
+        ActivityNotFoundException.class, InvalidParticipantException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<String> handleException(Exception e, WebRequest request) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
@@ -145,15 +149,27 @@ class ActivityController {
         return ResponseEntity.ok(participantPagedResourcesAssembler.toModel(participants, p -> p));
     }
 
+    @Operation(summary = "Creates a participant for a specific activity")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Created the participant", content =
+            {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = Participant.class))}),
+        @ApiResponse(responseCode = "400", description = "Invalid participant request")})
     @PostMapping(value = "/{alternateKey}/participants",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Participant> assignParticipant(@PathVariable String alternateKey,
-                                                         @RequestBody ParticipantRequest participantRequest) {
-        Participant participant = activityService.assignParticipant(alternateKey, participantRequest);
-
-        // TODO add links
-
-        return ResponseEntity.ok(participant);
+    public ResponseEntity<?> newParticipant(@PathVariable String alternateKey,
+                                            @Parameter(description = "The participant to create")
+                                            @Valid @RequestBody ParticipantRequest participantRequest)
+            throws InvalidParticipantException, ActivityNotFoundException {
+        Participant participant = activityService.newParticipant(alternateKey, participantRequest);
+        Optional<URI> participantUri = relationService.convertToUri(
+                participant.getRequiredLink(IanaLinkRelations.SELF));
+        if (participantUri.isPresent()) {
+            return ResponseEntity.created(participantUri.get()).body(participant);
+        }
+        return ResponseEntity.badRequest().body(
+                String.format("Failed to create URI to new participant with alternate key %s",
+                        participant.getAlternateKey()));
     }
 
     private void addActivityLinks(Activity activity) {
@@ -177,7 +193,7 @@ class ActivityController {
         @Valid @RequestBody ActivityRequest activityRequest) {
         Activity activity = activityService.newActivity(activityRequest);
         addActivityLinks(activity);
-        Optional<URI> activityUri = activityRelationService.convertToUri(
+        Optional<URI> activityUri = relationService.convertToUri(
                 activity.getRequiredLink(IanaLinkRelations.SELF));
         if (activityUri.isPresent()) {
             return ResponseEntity.created(activityUri.get()).body(activity);
@@ -198,7 +214,7 @@ class ActivityController {
                                             @PathVariable String alternateKey) {
         activityService.updateActivity(alternateKey, activityRequest);
         Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();
-        Optional<URI> activityUri = activityRelationService.convertToUri(activityLink);
+        Optional<URI> activityUri = relationService.convertToUri(activityLink);
         if (activityUri.isPresent()) {
             return ResponseEntity.noContent().location(activityUri.get()).build();
         }

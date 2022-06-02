@@ -18,8 +18,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -39,6 +41,8 @@ public class ActivityRepository implements IActivityRepository {
     private final IActivityEntityRepository activityEntityRepository;
 
     private final IActivityParticipantEntityRepository activityParticipantEntityRepository;
+
+    private final ActivityParticipantRepository activityParticipantRepository;
 
     private final IParticipantEntityRepository participantEntityRepository;
 
@@ -65,22 +69,39 @@ public class ActivityRepository implements IActivityRepository {
         return optFound.map(activityEntity -> activityEntityMapper.toActivityRecord(activityEntity));
     }
 
-    @Override
-    public Page<ParticipantRecord> getParticipantsBy(String alternateKey, int page, int size) {
+    private Page<ParticipantRecord> getParticipantsBy(String alternateKey, Pageable pageable) {
         Page<ActivityParticipantEntity> activityParticipants =
                 activityParticipantEntityRepository
-                        .findActivityParticipants(alternateKey, PageRequest.of(page, size));
+                        .findActivityParticipants(alternateKey, pageable);
         return activityParticipants.map(activityParticipantEntity ->
                 participantEntityMapper.toParticipantRecord(activityParticipantEntity.getParticipant()));
     }
 
     @Override
-    public ParticipantRecord assignParticipant(String alternateKey, ParticipantRecord participantRecord) {
+    public Page<ParticipantRecord> getParticipantsBy(String alternateKey, int page, int size) {
+        return getParticipantsBy(alternateKey, PageRequest.of(page, size));
+    }
 
-        // TODO check if the participant already exists
-        // assign it to the passed activity
+    @Override
+    public List<ParticipantRecord> getParticipantsBy(String alternateKey) {
+        Page<ParticipantRecord> allParticipants = getParticipantsBy(alternateKey, Pageable.unpaged());
+        return allParticipants.getContent();
+    }
 
-        return null;
+    private ParticipantEntity newParticipant(ParticipantRecord participantRecord) {
+        ParticipantEntity participantEntity = participantEntityMapper.toParticipantEntity(participantRecord);
+        participantEntity.setAlternateKey(UUID.randomUUID().toString());
+        return participantEntityRepository.save(participantEntity);
+    }
+
+    @Override
+    public ParticipantRecord newParticipant(String alternateKey, ParticipantRecord participantRecord) {
+        ActivityEntity activityEntity = activityEntityRepository.findByAlternateKey(alternateKey).get();
+        ParticipantEntity participantEntity = newParticipant(participantRecord);
+        ActivityParticipantEntity assignment =
+                activityParticipantRepository.createAssignment(activityEntity, participantEntity);
+        activityParticipantRepository.save(assignment);
+        return participantEntityMapper.toParticipantRecord(participantEntity);
     }
 
     private ActivityRecord doSave(ActivityEntity activityEntity) {

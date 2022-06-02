@@ -36,7 +36,7 @@ public class ActivityImportRepository implements IActivityImportRepository {
 
     private final IParticipantEntityRepository participantRepository;
 
-    private final IActivityParticipantEntityRepository activityParticipantEntityRepository;
+    private final ActivityParticipantRepository activityParticipantRepository;
 
     private Set<ParticipantEntity> randomParticipants(Integer noOfParticipants) {
         Set<ParticipantEntity> participantEntities = new LinkedHashSet<>(noOfParticipants);
@@ -50,13 +50,7 @@ public class ActivityImportRepository implements IActivityImportRepository {
         return participantEntities;
     }
 
-    private ActivityParticipantEntity createAssignment(ActivityEntity activityEntity,
-                                                       ParticipantEntity participantEntity) {
-        ActivityParticipantEntity activityParticipantEntity = new ActivityParticipantEntity();
-        activityParticipantEntity.setActivity(activityEntity);
-        activityParticipantEntity.setParticipant(participantEntity);
-        return activityParticipantEntity;
-    }
+
 
     private void createParticipants(ActivityEntity activityEntity) {
         Integer noOfParticipants = activityEntity.getNoOfParticipants();
@@ -65,8 +59,9 @@ public class ActivityImportRepository implements IActivityImportRepository {
                     participantRepository.saveAll(randomParticipants(noOfParticipants));
             List<ParticipantEntity> participantEntities = IteratorUtils.toList(participantEntityIterable.iterator());
             List<ActivityParticipantEntity> assignments = participantEntities.stream().map(participantEntity ->
-                    createAssignment(activityEntity, participantEntity)).collect(Collectors.toList());
-            activityParticipantEntityRepository.saveAll(assignments);
+                    activityParticipantRepository.createAssignment(activityEntity, participantEntity))
+                    .collect(Collectors.toList());
+            activityParticipantRepository.saveAll(assignments);
         }
     }
 
