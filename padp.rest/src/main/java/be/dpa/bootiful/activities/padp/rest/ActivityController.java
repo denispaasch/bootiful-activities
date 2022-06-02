@@ -7,6 +7,7 @@ import be.dpa.bootiful.activities.dm.api.Participant;
 import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
 import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
 import be.dpa.bootiful.activities.dm.api.exception.InvalidParticipantException;
+import be.dpa.bootiful.activities.dm.api.exception.ParticipantNotFoundException;
 import be.dpa.bootiful.activities.padp.rest.validation.SearchConstraint;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -71,10 +72,15 @@ class ActivityController {
 
     private final PagedResourcesAssembler<Participant> participantPagedResourcesAssembler;
 
-    @ExceptionHandler(value = { ConstraintViolationException.class,
-        ActivityNotFoundException.class, InvalidParticipantException.class })
+    @ExceptionHandler(value = { ConstraintViolationException.class, InvalidParticipantException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleException(Exception e, WebRequest request) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = { ActivityNotFoundException.class })
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<String> handleNotFoundException(Exception e, WebRequest request) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
@@ -91,14 +97,17 @@ class ActivityController {
             @Valid @SearchConstraint @Parameter(description = "An optional search string, f.e. type==busywork")
             @RequestParam(defaultValue = "") String search,
             @Parameter(description = "The page index") @RequestParam(defaultValue = "0") Integer page,
-            @Parameter(description = "The page size") @RequestParam(defaultValue = "5") Integer size) {
+            @Parameter(description = "The page size") @RequestParam(defaultValue = "5") Integer size)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
         Optional<String> optSearch = StringUtils.isEmpty(search) ? Optional.empty() : Optional.of(search);
         Page<Activity> activities = activityService.getActivities(optSearch, page, size);
         List<Activity> content = activities.getContent();
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
         }
-        content.forEach(this::addActivityLinks);
+        for (Activity activity : content) {
+            addActivityLinks(activity);
+        }
         return ResponseEntity.ok(activityPagedResourcesAssembler.toModel(activities, a -> a));
     }
 
@@ -110,7 +119,7 @@ class ActivityController {
         @ApiResponse(responseCode = "404", description = "Activity not found")})
     @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Activity> getActivityBy(@Parameter(description = "The alternate key of the activity")
-        @PathVariable String alternateKey) {
+        @PathVariable String alternateKey) throws ActivityNotFoundException, ParticipantNotFoundException {
         Optional<Activity> optResponse = activityService.getActivityBy(alternateKey);
         Activity activity = optResponse.orElse(null);
         if (activity == null) {
@@ -120,12 +129,18 @@ class ActivityController {
         return ResponseEntity.ok(activity);
     }
 
-    private void addParticipantLinks(Participant participant, String alternateKey) {
+    private void addParticipantLinks(String activityAk, Participant participant)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
+        Link selfLink = linkTo(methodOn(ActivityController.class)
+                .getParticipantBy(activityAk, participant.getAlternateKey())).withSelfRel();
+        Link participantsLink = linkTo(methodOn(ActivityController.class)
+                .getParticipantsBy(activityAk, null, null)).withRel(RELATION_PARTICIPANTS).expand();
         Link activityLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(alternateKey)).withRel(RELATION_ACTIVITY);
+                .getActivityBy(activityAk)).withRel(RELATION_ACTIVITY);
         Link activitiesLink = linkTo(methodOn(ActivityController.class)
                 .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
-        participant.add(activityLink, activitiesLink);
+
+        participant.add(selfLink, participantsLink, activityLink, activitiesLink);
     }
 
     @Operation(summary = "Gets the participants of a specific activity, f.e. a public facebook party")
@@ -135,18 +150,38 @@ class ActivityController {
                 schema = @Schema(implementation = PagedModel.class))}),
         @ApiResponse(responseCode = "204", description = "Sadly there are participants for the given activity")
     })
-    @GetMapping(value = "/{alternateKey}/participants",
+    @GetMapping(value = "/{activityAk}/participants",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String alternateKey,
+    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String activityAk,
         @RequestParam(defaultValue = "0") Integer page,
-        @RequestParam(defaultValue = "5") Integer size) {
-        Page<Participant> participants = activityService.getActivityParticipants(alternateKey, page, size);
+        @RequestParam(defaultValue = "5") Integer size) throws ActivityNotFoundException, ParticipantNotFoundException {
+        Page<Participant> participants = activityService.getActivityParticipants(activityAk, page, size);
         List<Participant> content = participants.getContent();
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
         }
-        content.forEach(participant -> addParticipantLinks(participant, alternateKey));
+        for (Participant participant : content) {
+            addParticipantLinks(activityAk, participant);
+        }
         return ResponseEntity.ok(participantPagedResourcesAssembler.toModel(participants, p -> p));
+    }
+
+    @Operation(summary = "Gets an activity participant by its alternate key")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Found the activity", content =
+            {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                schema = @Schema(implementation = Activity.class))}),
+        @ApiResponse(responseCode = "404", description = "Activity or participant not found")})
+    @GetMapping(value = "/{activityAk}/participants/{participantAk}",
+            produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<Participant> getParticipantBy(@Parameter(description = "The alternate key of the activity")
+                                                    @PathVariable String activityAk,
+                                                    @Parameter(description = "The alternate key of the participant")
+                                                    @PathVariable String participantAk)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
+        Participant participant = activityService.getParticipantBy(activityAk, participantAk);
+        addParticipantLinks(activityAk, participant);
+        return ResponseEntity.ok(participant);
     }
 
     @Operation(summary = "Creates a participant for a specific activity")
@@ -155,13 +190,14 @@ class ActivityController {
             {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = Participant.class))}),
         @ApiResponse(responseCode = "400", description = "Invalid participant request")})
-    @PostMapping(value = "/{alternateKey}/participants",
+    @PostMapping(value = "/{activityAk}/participants",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<?> newParticipant(@PathVariable String alternateKey,
+    public ResponseEntity<?> newParticipant(@PathVariable String activityAk,
                                             @Parameter(description = "The participant to create")
                                             @Valid @RequestBody ParticipantRequest participantRequest)
-            throws InvalidParticipantException, ActivityNotFoundException {
-        Participant participant = activityService.newParticipant(alternateKey, participantRequest);
+            throws ActivityNotFoundException, InvalidParticipantException, ParticipantNotFoundException {
+        Participant participant = activityService.newParticipant(activityAk, participantRequest);
+        addParticipantLinks(activityAk, participant);
         Optional<URI> participantUri = relationService.convertToUri(
                 participant.getRequiredLink(IanaLinkRelations.SELF));
         if (participantUri.isPresent()) {
@@ -172,7 +208,7 @@ class ActivityController {
                         participant.getAlternateKey()));
     }
 
-    private void addActivityLinks(Activity activity) {
+    private void addActivityLinks(Activity activity) throws ActivityNotFoundException, ParticipantNotFoundException {
         Link selfLink = linkTo(methodOn(ActivityController.class)
                 .getActivityBy(activity.getAlternateKey())).withSelfRel();
         Link participantsLink = linkTo(methodOn(ActivityController.class)
@@ -190,7 +226,8 @@ class ActivityController {
         @ApiResponse(responseCode = "400", description = "Invalid activity request")})
     @PostMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> newActivity(@Parameter(description = "The activity to create")
-        @Valid @RequestBody ActivityRequest activityRequest) {
+        @Valid @RequestBody ActivityRequest activityRequest)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
         Activity activity = activityService.newActivity(activityRequest);
         addActivityLinks(activity);
         Optional<URI> activityUri = relationService.convertToUri(
@@ -211,7 +248,8 @@ class ActivityController {
     public ResponseEntity<?> updateActivity(@Parameter(description = "The activity data to update")
                                             @Valid @RequestBody ActivityRequest activityRequest,
                                             @Parameter(description = "The alternate key of the activity to update")
-                                            @PathVariable String alternateKey) {
+                                            @PathVariable String alternateKey)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
         activityService.updateActivity(alternateKey, activityRequest);
         Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();
         Optional<URI> activityUri = relationService.convertToUri(activityLink);

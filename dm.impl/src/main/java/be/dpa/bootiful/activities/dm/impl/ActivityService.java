@@ -7,6 +7,7 @@ import be.dpa.bootiful.activities.dm.api.Participant;
 import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
 import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
 import be.dpa.bootiful.activities.dm.api.exception.InvalidParticipantException;
+import be.dpa.bootiful.activities.dm.api.exception.ParticipantNotFoundException;
 import be.dpa.bootiful.activities.dm.impl.mapper.IActivityMapper;
 import be.dpa.bootiful.activities.dm.impl.mapper.IParticipantMapper;
 import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
@@ -84,22 +85,40 @@ public class ActivityService implements IActivityService {
                 .findAny().isPresent();
     }
 
-    @Override
-    public Participant newParticipant(String alternateKey, ParticipantRequest participantRequest)
-        throws ActivityNotFoundException, InvalidParticipantException {
-        Optional<ActivityRecord> activityRecord = activityRepository.getBy(alternateKey);
+    private void validateActivity(String activityAk) throws ActivityNotFoundException {
+        Optional<ActivityRecord> activityRecord = activityRepository.getBy(activityAk);
         if (!activityRecord.isPresent()) {
             throw new ActivityNotFoundException(
-                    String.format("Could not find an activity for the alternate key %s", alternateKey));
+                    String.format("Could not find an activity for the alternate key %s", activityAk));
         }
-        List<ParticipantRecord> activityParticipants = activityRepository.getParticipantsBy(alternateKey);
+    }
+
+    @Override
+    public Participant newParticipant(String activityAk, ParticipantRequest participantRequest)
+        throws ActivityNotFoundException, InvalidParticipantException {
+        validateActivity(activityAk);
+        List<ParticipantRecord> activityParticipants = activityRepository.getParticipantsBy(activityAk);
         if (participantExists(activityParticipants, participantRequest)) {
             throw new InvalidParticipantException(String.format("The participant %s %s already exists",
                     participantRequest.getFirstName(), participantRequest.getLastName()));
         }
 
         ParticipantRecord participantRecord = participantMapper.toParticipantRecord(participantRequest);
-        return participantMapper.toParticipant(activityRepository.newParticipant(alternateKey, participantRecord));
+        return participantMapper.toParticipant(activityRepository.newParticipant(activityAk, participantRecord));
+    }
+
+    @Override
+    public Participant getParticipantBy(String activityAk, String participantAk)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
+        validateActivity(activityAk);
+        List<ParticipantRecord> participants = activityRepository.getParticipantsBy(activityAk);
+        Optional<ParticipantRecord> participantRecord =
+                participants.stream().filter(p -> StringUtils.equals(p.getAlternateKey(), participantAk)).findFirst();
+        if (!participantRecord.isPresent()) {
+            throw new ParticipantNotFoundException(
+                    String.format("Could not find participant for alternate key %s", participantAk));
+        }
+        return participantMapper.toParticipant(participantRecord.get());
     }
 
 

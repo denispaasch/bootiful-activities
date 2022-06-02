@@ -1,6 +1,8 @@
 package be.dpa.bootiful.activities.padp.rest;
 
 import be.dpa.bootiful.activities.dm.api.ApiEntrypoint;
+import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
+import be.dpa.bootiful.activities.dm.api.exception.ParticipantNotFoundException;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +27,11 @@ class ApiEntrypointController {
      * Gets the API entry point to access the bootiful activities.
      *
      * @return the root response
+     * @throws ActivityNotFoundException in case an activity could not be found
+     * @throws ParticipantNotFoundException in case a participant could not be found
      */
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<ApiEntrypoint> getRoot() {
+    public ResponseEntity<ApiEntrypoint> getRoot() throws ActivityNotFoundException, ParticipantNotFoundException {
         ApiEntrypoint apiEntryPoint = new ApiEntrypoint();
         Link activitiesLink = linkTo(methodOn(ActivityController.class).getActivities(null, null, null))
                 .withRel(RELATION_ACTIVITIES).expand();

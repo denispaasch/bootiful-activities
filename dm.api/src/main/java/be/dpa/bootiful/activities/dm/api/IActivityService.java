@@ -2,6 +2,7 @@ package be.dpa.bootiful.activities.dm.api;
 
 import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
 import be.dpa.bootiful.activities.dm.api.exception.InvalidParticipantException;
+import be.dpa.bootiful.activities.dm.api.exception.ParticipantNotFoundException;
 import org.springframework.data.domain.Page;
 
 import java.util.Optional;
@@ -79,4 +80,16 @@ public interface IActivityService {
      */
     Participant newParticipant(String alternateKey, ParticipantRequest participantRequest)
         throws ActivityNotFoundException, InvalidParticipantException;
+
+    /**
+     * Gets a participant for the passed parameters.
+     *
+     * @param activityAk the activity alternate key
+     * @param participantAk the participant alternate key
+     * @return the participant
+     * @throws ActivityNotFoundException in case no activity could be found for the passed alternate key
+     * @throws ParticipantNotFoundException in case the participant could not be found
+     */
+    Participant getParticipantBy(String activityAk, String participantAk) throws ActivityNotFoundException,
+            ParticipantNotFoundException;
 }
