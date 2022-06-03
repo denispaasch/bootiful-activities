@@ -51,9 +51,13 @@ public class ActivityService implements IActivityService {
     }
 
     @Override
-    public Optional<Activity> getActivityBy(String alternateKey) {
-        Optional<ActivityRecord> optFound = activityRepository.getBy(alternateKey);
-        return optFound.map(activityRecord -> activityMapper.toActivityResponse(activityRecord));
+    public Activity getActivityBy(String activityAk) throws ActivityNotFoundException {
+        Optional<ActivityRecord> optFound = activityRepository.getBy(activityAk);
+        if (!optFound.isPresent()) {
+            throw new ActivityNotFoundException(
+                    String.format("Could not find an activity for the alternate key %s", activityAk));
+        }
+        return activityMapper.toActivityResponse(optFound.get());
     }
 
     private Activity save(String alternateKey, ActivityRequest activityRequest) {

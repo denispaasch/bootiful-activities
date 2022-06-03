@@ -23,13 +23,11 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,19 +35,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
 
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITIES;
-import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITY;
-import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_PARTICIPANTS;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -72,18 +64,6 @@ class ActivityController {
 
     private final PagedResourcesAssembler<Participant> participantPagedResourcesAssembler;
 
-    @ExceptionHandler(value = { ConstraintViolationException.class, InvalidParticipantException.class })
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ResponseEntity<String> handleException(Exception e, WebRequest request) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(value = { ActivityNotFoundException.class })
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<String> handleNotFoundException(Exception e, WebRequest request) {
-        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
     @Operation(summary = "Gets a paged model containing activities")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "A paged model of activities", content =
@@ -105,9 +85,7 @@ class ActivityController {
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
         }
-        for (Activity activity : content) {
-            addActivityLinks(activity);
-        }
+        relationService.addActivityLinks(content);
         return ResponseEntity.ok(activityPagedResourcesAssembler.toModel(activities, a -> a));
     }
 
@@ -117,30 +95,12 @@ class ActivityController {
             {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = Activity.class))}),
         @ApiResponse(responseCode = "404", description = "Activity not found")})
-    @GetMapping(value = "/{alternateKey}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/{activityAk}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Activity> getActivityBy(@Parameter(description = "The alternate key of the activity")
-        @PathVariable String alternateKey) throws ActivityNotFoundException, ParticipantNotFoundException {
-        Optional<Activity> optResponse = activityService.getActivityBy(alternateKey);
-        Activity activity = optResponse.orElse(null);
-        if (activity == null) {
-            return ResponseEntity.notFound().build();
-        }
-        addActivityLinks(activity);
+        @PathVariable String activityAk) throws ActivityNotFoundException, ParticipantNotFoundException {
+        Activity activity = activityService.getActivityBy(activityAk);
+        relationService.addActivityLinks(activity);
         return ResponseEntity.ok(activity);
-    }
-
-    private void addParticipantLinks(String activityAk, Participant participant)
-            throws ActivityNotFoundException, ParticipantNotFoundException {
-        Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantBy(activityAk, participant.getAlternateKey())).withSelfRel();
-        Link participantsLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantsBy(activityAk, null, null)).withRel(RELATION_PARTICIPANTS).expand();
-        Link activityLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(activityAk)).withRel(RELATION_ACTIVITY);
-        Link activitiesLink = linkTo(methodOn(ActivityController.class)
-                .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
-
-        participant.add(selfLink, participantsLink, activityLink, activitiesLink);
     }
 
     @Operation(summary = "Gets the participants of a specific activity, f.e. a public facebook party")
@@ -160,9 +120,7 @@ class ActivityController {
         if (CollectionUtils.isEmpty(content)) {
             return ResponseEntity.noContent().build();
         }
-        for (Participant participant : content) {
-            addParticipantLinks(activityAk, participant);
-        }
+        relationService.addParticipantLinks(activityAk, content);
         return ResponseEntity.ok(participantPagedResourcesAssembler.toModel(participants, p -> p));
     }
 
@@ -180,7 +138,7 @@ class ActivityController {
                                                     @PathVariable String participantAk)
             throws ActivityNotFoundException, ParticipantNotFoundException {
         Participant participant = activityService.getParticipantBy(activityAk, participantAk);
-        addParticipantLinks(activityAk, participant);
+        relationService.addParticipantLinks(activityAk, participant);
         return ResponseEntity.ok(participant);
     }
 
@@ -197,7 +155,7 @@ class ActivityController {
                                             @Valid @RequestBody ParticipantRequest participantRequest)
             throws ActivityNotFoundException, InvalidParticipantException, ParticipantNotFoundException {
         Participant participant = activityService.newParticipant(activityAk, participantRequest);
-        addParticipantLinks(activityAk, participant);
+        relationService.addParticipantLinks(activityAk, participant);
         Optional<URI> participantUri = relationService.convertToUri(
                 participant.getRequiredLink(IanaLinkRelations.SELF));
         if (participantUri.isPresent()) {
@@ -208,15 +166,7 @@ class ActivityController {
                         participant.getAlternateKey()));
     }
 
-    private void addActivityLinks(Activity activity) throws ActivityNotFoundException, ParticipantNotFoundException {
-        Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(activity.getAlternateKey())).withSelfRel();
-        Link participantsLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantsBy(activity.getAlternateKey(), null, null)).withRel(RELATION_PARTICIPANTS).expand();
-        Link activitiesLink = linkTo(methodOn(ActivityController.class)
-                .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
-        activity.add(selfLink, participantsLink, activitiesLink);
-    }
+
 
     @Operation(summary = "Creates an activity")
     @ApiResponses(value = {
@@ -229,7 +179,7 @@ class ActivityController {
         @Valid @RequestBody ActivityRequest activityRequest)
             throws ActivityNotFoundException, ParticipantNotFoundException {
         Activity activity = activityService.newActivity(activityRequest);
-        addActivityLinks(activity);
+        relationService.addActivityLinks(activity);
         Optional<URI> activityUri = relationService.convertToUri(
                 activity.getRequiredLink(IanaLinkRelations.SELF));
         if (activityUri.isPresent()) {
@@ -244,20 +194,20 @@ class ActivityController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Updated the activity"),
         @ApiResponse(responseCode = "400", description = "Invalid activity request")})
-    @PutMapping(value = "/{alternateKey}")
+    @PutMapping(value = "/{activityAk}")
     public ResponseEntity<?> updateActivity(@Parameter(description = "The activity data to update")
                                             @Valid @RequestBody ActivityRequest activityRequest,
                                             @Parameter(description = "The alternate key of the activity to update")
-                                            @PathVariable String alternateKey)
+                                            @PathVariable String activityAk)
             throws ActivityNotFoundException, ParticipantNotFoundException {
-        activityService.updateActivity(alternateKey, activityRequest);
-        Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(alternateKey)).withSelfRel();
+        activityService.updateActivity(activityAk, activityRequest);
+        Link activityLink = linkTo(methodOn(ActivityController.class).getActivityBy(activityAk)).withSelfRel();
         Optional<URI> activityUri = relationService.convertToUri(activityLink);
         if (activityUri.isPresent()) {
             return ResponseEntity.noContent().location(activityUri.get()).build();
         }
         return ResponseEntity.badRequest().body(
-                String.format("Failed to create URI to updated activity with alternate key %s", alternateKey));
+                String.format("Failed to create URI to updated activity with alternate key %s", activityAk));
     }
 
     @Operation(summary = "Deletes an activity by its alternate key")
@@ -266,10 +216,10 @@ class ActivityController {
             content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
             schema = @Schema(implementation = Activity.class))),
         @ApiResponse(responseCode = "404", description = "Activity to delete not found", content = @Content)})
-    @DeleteMapping(value = "/{alternateKey}")
+    @DeleteMapping(value = "/{activityAk}")
     public ResponseEntity<?> deleteActivity(@Parameter(description = "The alternate key of the activity to delete")
-                                            @PathVariable String alternateKey) {
-        if (activityService.deleteActivity(alternateKey)) {
+                                            @PathVariable String activityAk) {
+        if (activityService.deleteActivity(activityAk)) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();

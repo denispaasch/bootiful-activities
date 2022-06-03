@@ -5,6 +5,7 @@ import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
+import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
@@ -153,13 +155,14 @@ public class ActivityControllerTest {
 
     @Test
     public void testGetNonExistentActivity() throws Exception {
+        when(activityService.getActivityBy(anyString())).thenThrow(ActivityNotFoundException.class);
         mockMvc.perform(get("/api/v1/activities/IDONTEXIST"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void testGetActivity() throws Exception {
-        when(activityService.getActivityBy(eq(AK_STARE))).thenReturn(Optional.of(stareAtTheWallActivity));
+        when(activityService.getActivityBy(eq(AK_STARE))).thenReturn(stareAtTheWallActivity);
         mockMvc.perform(get("/api/v1/activities/".concat(AK_STARE)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.alternateKey", is(AK_STARE)))

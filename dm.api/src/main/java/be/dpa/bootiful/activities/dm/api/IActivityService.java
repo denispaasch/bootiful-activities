@@ -37,10 +37,11 @@ public interface IActivityService {
     /**
      * Gets an activity using its alternate key.
      *
-     * @param alternateKey the alternate key
+     * @param activityAk the alternate key
      * @return an optional activity
+     * @throws ActivityNotFoundException in case no activity could be found for the passed alternate key
      */
-    Optional<Activity> getActivityBy(String alternateKey);
+    Activity getActivityBy(String activityAk) throws ActivityNotFoundException;
 
     /**
      * Creates a new activity using the passed activity request.
