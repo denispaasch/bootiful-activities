@@ -36,6 +36,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -84,19 +85,19 @@ public class ActivityControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private Activity createActivity(String alternateKey, String action, String type, String details) {
+    private Activity createActivity(String activityAk, String action, String type, String details) {
         Activity activity = new Activity();
         activity.setAction(action);
-        activity.setAlternateKey(alternateKey);
+        activity.setAlternateKey(activityAk);
         activity.setType(type);
         activity.setDetails(details);
         activity.setNoOfParticipants(1);
         return activity;
     }
 
-    private Participant createParticipant(String alternateKey, String firstName, String lastName) {
+    private Participant createParticipant(String participantAk, String firstName, String lastName) {
         Participant participant = new Participant();
-        participant.setAlternateKey(alternateKey);
+        participant.setAlternateKey(participantAk);
         participant.setFirstName(firstName);
         participant.setLastName(lastName);
         return participant;
@@ -293,16 +294,15 @@ public class ActivityControllerTest {
 
     @Test
     public void testDeleteActivity() throws Exception {
-        when(activityService.deleteActivity(eq(AK_NETFLIX))).thenReturn(Boolean.TRUE);
-        mockMvc.perform(delete("/api/v1/activities/{alternateKey}", AK_NETFLIX))
+        mockMvc.perform(delete("/api/v1/activities/{activityAk}", AK_NETFLIX))
                 .andExpect(status().isNoContent());
         verify(activityService).deleteActivity(eq(AK_NETFLIX));
     }
 
     @Test
     public void testDeleteNonExistentActivity() throws Exception {
-        when(activityService.deleteActivity(eq(AK_BIKE))).thenReturn(Boolean.FALSE);
-        mockMvc.perform(delete("/api/v1/activities/{alternateKey}", AK_BIKE))
+        doThrow(ActivityNotFoundException.class).when(activityService).deleteActivity(eq(AK_BIKE));
+        mockMvc.perform(delete("/api/v1/activities/{activityAk}", AK_BIKE))
                 .andExpect(status().isNotFound());
         verify(activityService).deleteActivity(eq(AK_BIKE));
     }

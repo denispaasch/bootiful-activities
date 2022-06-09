@@ -117,7 +117,7 @@ public class ActivityRepository implements IActivityRepository {
     }
 
     @Override
-    public Long delete(String alternateKey) {
+    public long delete(String alternateKey) {
         Optional<ActivityEntity> optActivityEntity = activityEntityRepository.findByAlternateKey(alternateKey);
         if (!optActivityEntity.isPresent()) {
             return ZERO_ROWS_AFFECTED;

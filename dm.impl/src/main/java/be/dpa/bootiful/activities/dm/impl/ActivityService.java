@@ -44,9 +44,9 @@ public class ActivityService implements IActivityService {
     }
 
     @Override
-    public Page<Participant> getActivityParticipants(String activityAlternateKey, int page, int size) {
+    public Page<Participant> getActivityParticipants(String activityAk, int page, int size) {
         Page<ParticipantRecord> participantRecords =
-                activityRepository.getParticipantsBy(activityAlternateKey, page, size);
+                activityRepository.getParticipantsBy(activityAk, page, size);
         return participantRecords.map(participantMapper::toParticipant);
     }
 
@@ -72,13 +72,18 @@ public class ActivityService implements IActivityService {
     }
 
     @Override
-    public Activity updateActivity(String alternateKey, ActivityRequest activityRequest) {
-        return save(alternateKey, activityRequest);
+    public Activity updateActivity(String activityAk, ActivityRequest activityRequest) {
+        return save(activityAk, activityRequest);
     }
 
     @Override
-    public boolean deleteActivity(String alternateKey) {
-        return activityRepository.delete(alternateKey) > 0;
+    public void deleteActivity(String activityAk) throws ActivityNotFoundException {
+        long rowsAffected = activityRepository.delete(activityAk);
+        if (rowsAffected == 0L) {
+            throw new ActivityNotFoundException(
+                    String.format("Could not find an activity for the alternate key %s", activityAk));
+        }
+        return;
     }
 
     private boolean participantExists(List<ParticipantRecord> activityParticipants,

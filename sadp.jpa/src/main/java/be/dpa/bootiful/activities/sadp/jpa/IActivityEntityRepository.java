@@ -26,5 +26,5 @@ public interface IActivityEntityRepository extends PagingAndSortingRepository<Ac
     Optional<ActivityEntity> findByAlternateKey(String alternateKey);
 
     @Transactional
-    Long deleteByAlternateKey(String alternateKey);
+    long deleteByAlternateKey(String alternateKey);
 }

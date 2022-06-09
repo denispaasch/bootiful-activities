@@ -218,11 +218,9 @@ class ActivityController {
         @ApiResponse(responseCode = "404", description = "Activity to delete not found", content = @Content)})
     @DeleteMapping(value = "/{activityAk}")
     public ResponseEntity<?> deleteActivity(@Parameter(description = "The alternate key of the activity to delete")
-                                            @PathVariable String activityAk) {
-        if (activityService.deleteActivity(activityAk)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+                                            @PathVariable String activityAk) throws ActivityNotFoundException {
+        activityService.deleteActivity(activityAk);
+        return ResponseEntity.noContent().build();
     }
 
 }

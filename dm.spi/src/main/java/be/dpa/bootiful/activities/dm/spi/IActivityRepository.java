@@ -24,5 +24,5 @@ public interface IActivityRepository {
 
     ActivityRecord save(ActivityRecord activity);
 
-    Long delete(String alternateKey);
+    long delete(String alternateKey);
 }

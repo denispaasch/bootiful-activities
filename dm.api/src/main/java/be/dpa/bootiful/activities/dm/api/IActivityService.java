@@ -27,12 +27,12 @@ public interface IActivityService {
     /**
      * Gets the the participants of a specific activity.
      *
-     * @param activityAlternateKey the alternate key of the activity
-     * @param page                 the page index
-     * @param size                 the page size
+     * @param activityAk the alternate key of the activity
+     * @param page       the page index
+     * @param size       the page size
      * @return the participants of the passed activity
      */
-    Page<Participant> getActivityParticipants(String activityAlternateKey, int page, int size);
+    Page<Participant> getActivityParticipants(String activityAk, int page, int size);
 
     /**
      * Gets an activity using its alternate key.
@@ -54,41 +54,41 @@ public interface IActivityService {
     /**
      * Updates an existing activity.
      *
-     * @param alternateKey    the alternate key of the activity to update
+     * @param activityAk      the alternate key of the activity to update
      * @param activityRequest the activity request containing the data to set
      * @return the updated activity
      */
-    Activity updateActivity(String alternateKey,
+    Activity updateActivity(String activityAk,
                             ActivityRequest activityRequest);
 
     /**
      * Deletes an activity by its alternate key.
      *
-     * @param alternateKey the alternate key of the activity to delete
-     * @return {@code true} if the activity was deleted, otherwise {@code false}
+     * @param activityAk the alternate key of the activity to delete
+     * @throws ActivityNotFoundException in case no activity could be found for the passed alternate key
      */
-    boolean deleteActivity(String alternateKey);
+    void deleteActivity(String activityAk) throws ActivityNotFoundException;
 
 
     /**
      * Adds a participant to an activity.
      *
-     * @param alternateKey       the alternate key of the activity
+     * @param activityAk         the alternate key of the activity
      * @param participantRequest a participant request
      * @return the assigned participant
-     * @throws ActivityNotFoundException in case no activity could be found for the passed alternate key
+     * @throws ActivityNotFoundException   in case no activity could be found for the passed alternate key
      * @throws InvalidParticipantException in case of an invalid participant
      */
-    Participant newParticipant(String alternateKey, ParticipantRequest participantRequest)
-        throws ActivityNotFoundException, InvalidParticipantException;
+    Participant newParticipant(String activityAk, ParticipantRequest participantRequest)
+            throws ActivityNotFoundException, InvalidParticipantException;
 
     /**
      * Gets a participant for the passed parameters.
      *
-     * @param activityAk the activity alternate key
+     * @param activityAk    the activity alternate key
      * @param participantAk the participant alternate key
      * @return the participant
-     * @throws ActivityNotFoundException in case no activity could be found for the passed alternate key
+     * @throws ActivityNotFoundException    in case no activity could be found for the passed alternate key
      * @throws ParticipantNotFoundException in case the participant could not be found
      */
     Participant getParticipantBy(String activityAk, String participantAk) throws ActivityNotFoundException,
