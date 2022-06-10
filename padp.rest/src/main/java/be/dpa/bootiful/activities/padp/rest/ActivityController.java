@@ -166,8 +166,6 @@ class ActivityController {
                         participant.getAlternateKey()));
     }
 
-
-
     @Operation(summary = "Creates an activity")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Created the activity", content =

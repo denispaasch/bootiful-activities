@@ -5,6 +5,7 @@ import be.dpa.bootiful.activities.dm.api.Activity;
 import be.dpa.bootiful.activities.dm.api.ActivityRequest;
 import be.dpa.bootiful.activities.dm.api.IActivityService;
 import be.dpa.bootiful.activities.dm.api.Participant;
+import be.dpa.bootiful.activities.dm.api.ParticipantRequest;
 import be.dpa.bootiful.activities.dm.api.exception.ActivityNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,6 +56,7 @@ public class ActivityControllerTest {
     private static final String NEW_ACTIVITY_INVALID_JSON = "/newActivityInvalid.json";
     private static final String UPDATE_ACTIVITY_JSON = "/updateActivity.json";
     private static final String UPDATE_ACTIVITY_INVALID_JSON = "/updateActivityInvalid.json";
+    private static final String NEW_PARTICIPANT_JSON = "/newParticipant.json";
     private static final String AK_STARE = "AKSTARE";
     private static final String ACTION_STARE_AT_THE_WALL = "Stare at the wall";
     private static final String TYPE_SAD = "sad";
@@ -187,7 +190,25 @@ public class ActivityControllerTest {
                 .andExpect(jsonPath("$._embedded.participants[0].alternateKey", is(AK_TOM_BOLA)))
                 .andExpect(jsonPath("$._embedded.participants[0].firstName", is(TOM)))
                 .andExpect(jsonPath("$._embedded.participants[0].lastName", is(BOLA)));
+    }
 
+    @Test
+    public void testNewActivityParticipant() throws Exception {
+        Participant participant = new Participant();
+        participant.setAlternateKey(UUID.randomUUID().toString());
+        when(activityService.newParticipant(eq(AK_BIKE), any(ParticipantRequest.class))).thenReturn(participant);
+
+        String newParticipantJson = readFile(NEW_PARTICIPANT_JSON);
+        mockMvc.perform(post("/api/v1/activities/".concat(AK_BIKE).concat("/participants"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newParticipantJson)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isCreated());
+        ArgumentCaptor<ParticipantRequest> participantRequestCaptor = ArgumentCaptor.forClass(ParticipantRequest.class);
+        verify(activityService).newParticipant(eq(AK_BIKE), participantRequestCaptor.capture());
+        ParticipantRequest participantRequest = participantRequestCaptor.getValue();
+        assertEquals("Frank Ulrich Christoph", participantRequest.getFirstName());
+        assertEquals("Kowalski", participantRequest.getLastName());
     }
 
     private String readFile(String file) {
