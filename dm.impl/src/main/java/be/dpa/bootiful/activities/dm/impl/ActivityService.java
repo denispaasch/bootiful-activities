@@ -83,7 +83,6 @@ public class ActivityService implements IActivityService {
             throw new ActivityNotFoundException(
                     String.format("Could not find an activity for the alternate key %s", activityAk));
         }
-        return;
     }
 
     private boolean participantExists(List<ParticipantRecord> activityParticipants,

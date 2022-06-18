@@ -74,7 +74,7 @@ class ActivityController {
     })
     @GetMapping(produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<PagedModel<Activity>> getActivities(
-            @Valid @SearchConstraint @Parameter(description = "An optional search string, f.e. type==busywork")
+            @Valid @SearchConstraint @Parameter(description = "An optional search string (FIQL), f.e. type==busywork")
             @RequestParam(defaultValue = "") String search,
             @Parameter(description = "The page index") @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "The page size") @RequestParam(defaultValue = "5") Integer size)
