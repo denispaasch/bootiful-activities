@@ -112,9 +112,11 @@ class ActivityController {
     })
     @GetMapping(value = "/{activityAk}/participants",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<PagedModel<Participant>> getParticipantsBy(@PathVariable String activityAk,
-        @RequestParam(defaultValue = "0") Integer page,
-        @RequestParam(defaultValue = "5") Integer size) throws ActivityNotFoundException, ParticipantNotFoundException {
+    public ResponseEntity<PagedModel<Participant>> getActivityParticipantsBy(
+            @PathVariable String activityAk,
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "5") Integer size)
+            throws ActivityNotFoundException, ParticipantNotFoundException {
         Page<Participant> participants = activityService.getActivityParticipants(activityAk, page, size);
         List<Participant> content = participants.getContent();
         if (CollectionUtils.isEmpty(content)) {
@@ -132,10 +134,9 @@ class ActivityController {
         @ApiResponse(responseCode = "404", description = "Activity or participant not found")})
     @GetMapping(value = "/{activityAk}/participants/{participantAk}",
             produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Participant> getParticipantBy(@Parameter(description = "The alternate key of the activity")
-                                                    @PathVariable String activityAk,
-                                                    @Parameter(description = "The alternate key of the participant")
-                                                    @PathVariable String participantAk)
+    public ResponseEntity<Participant> getActivityParticipantBy(
+            @Parameter(description = "The alternate key of the activity") @PathVariable String activityAk,
+            @Parameter(description = "The alternate key of the participant") @PathVariable String participantAk)
             throws ActivityNotFoundException, ParticipantNotFoundException {
         Participant participant = activityService.getParticipantBy(activityAk, participantAk);
         relationService.addParticipantLinks(activityAk, participant);

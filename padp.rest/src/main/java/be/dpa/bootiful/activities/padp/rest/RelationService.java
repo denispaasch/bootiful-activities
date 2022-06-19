@@ -47,11 +47,11 @@ class RelationService {
 
     public void addActivityLinks(Activity activity) throws ActivityNotFoundException, ParticipantNotFoundException {
         Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getActivityBy(activity.getAlternateKey())).withSelfRel();
+            .getActivityBy(activity.getAlternateKey())).withSelfRel();
         Link participantsLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantsBy(activity.getAlternateKey(), null, null)).withRel(RELATION_PARTICIPANTS).expand();
+            .getActivityParticipantsBy(activity.getAlternateKey(), null, null)).withRel(RELATION_PARTICIPANTS).expand();
         Link activitiesLink = linkTo(methodOn(ActivityController.class)
-                .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
+            .getActivities(null, null, null)).withRel(RELATION_ACTIVITIES).expand();
         activity.add(selfLink, participantsLink, activitiesLink);
     }
 
@@ -65,9 +65,9 @@ class RelationService {
     public void addParticipantLinks(String activityAk, Participant participant)
         throws ActivityNotFoundException, ParticipantNotFoundException {
         Link selfLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantBy(activityAk, participant.getAlternateKey())).withSelfRel();
+                .getActivityParticipantBy(activityAk, participant.getAlternateKey())).withSelfRel();
         Link participantsLink = linkTo(methodOn(ActivityController.class)
-                .getParticipantsBy(activityAk, null, null)).withRel(RELATION_PARTICIPANTS).expand();
+                .getActivityParticipantsBy(activityAk, null, null)).withRel(RELATION_PARTICIPANTS).expand();
         Link activityLink = linkTo(methodOn(ActivityController.class)
                 .getActivityBy(activityAk)).withRel(RELATION_ACTIVITY);
         Link activitiesLink = linkTo(methodOn(ActivityController.class)

@@ -193,6 +193,17 @@ public class ActivityControllerTest {
     }
 
     @Test
+    public void testGetActivityParticipant() throws Exception {
+        when(activityService.getParticipantBy(eq(AK_BIKE), eq(AK_TOM_BOLA))).thenReturn(tomBolaParticipant);
+        mockMvc.perform(get("/api/v1/activities/".concat(AK_BIKE).concat("/participants/".concat(AK_TOM_BOLA))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.alternateKey", is(AK_TOM_BOLA)))
+                .andExpect(jsonPath("$.firstName", is(TOM)))
+                .andExpect(jsonPath("$.lastName", is(BOLA)));
+
+    }
+
+    @Test
     public void testNewActivityParticipant() throws Exception {
         Participant participant = new Participant();
         participant.setAlternateKey(UUID.randomUUID().toString());
