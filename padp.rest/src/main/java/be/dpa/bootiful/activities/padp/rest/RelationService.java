@@ -17,6 +17,7 @@ import java.util.Optional;
 import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITIES;
 import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_ACTIVITY;
 import static be.dpa.bootiful.activities.padp.rest.util.RelationConstants.RELATION_PARTICIPANTS;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.afford;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -48,6 +49,10 @@ class RelationService {
     public void addActivityLinks(Activity activity) throws ActivityNotFoundException, ParticipantNotFoundException {
         Link selfLink = linkTo(methodOn(ActivityController.class)
             .getActivityBy(activity.getAlternateKey())).withSelfRel();
+        selfLink = selfLink.andAffordance(afford(methodOn(ActivityController.class)
+            .updateActivity(null, activity.getAlternateKey())));
+
+
         Link participantsLink = linkTo(methodOn(ActivityController.class)
             .getActivityParticipantsBy(activity.getAlternateKey(), null, null)).withRel(RELATION_PARTICIPANTS).expand();
         Link activitiesLink = linkTo(methodOn(ActivityController.class)

@@ -95,7 +95,8 @@ class ActivityController {
             {@Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                 schema = @Schema(implementation = Activity.class))}),
         @ApiResponse(responseCode = "404", description = "Activity not found")})
-    @GetMapping(value = "/{activityAk}", produces = {MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/{activityAk}", produces = {MediaTypes.HAL_FORMS_JSON_VALUE,
+        MediaTypes.HAL_JSON_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Activity> getActivityBy(@Parameter(description = "The alternate key of the activity")
         @PathVariable String activityAk) throws ActivityNotFoundException, ParticipantNotFoundException {
         Activity activity = activityService.getActivityBy(activityAk);
