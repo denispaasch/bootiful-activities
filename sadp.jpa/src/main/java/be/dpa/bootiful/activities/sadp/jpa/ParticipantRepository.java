@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+
 /**
  * Pariticipant repository.
  *
@@ -24,8 +26,8 @@ public class ParticipantRepository implements IParticipantRepository {
 
     @Override
     public Page<ParticipantRecord> getAll(int page, int size) {
-        Page<ParticipantEntity> participantEntities = participantEntityRepository
-                .findByOrderByFirstNameAscLastNameAsc(PageRequest.of(page, size));
+        Page<ParticipantEntity> participantEntities = defaultIfNull(participantEntityRepository
+                .findByOrderByFirstNameAscLastNameAsc(PageRequest.of(page, size)), Page.empty());
         return participantEntities.map(participantEntityMapper::toParticipantRecord);
     }
 }
