@@ -1,13 +1,13 @@
 package be.dpa.bootiful.activities;
 
-import be.dpa.bootiful.activities.dm.spi.ActivityRecord;
-import be.dpa.bootiful.activities.dm.spi.IActivityImportRepository;
-import be.dpa.bootiful.activities.sadp.bored.BoredActivityProvider;
-import be.dpa.bootiful.activities.sadp.jpa.IActivityEntityRepository;
-import be.dpa.bootiful.activities.sadp.jpa.IActivityParticipantEntityRepository;
-import be.dpa.bootiful.activities.sadp.jpa.IParticipantEntityRepository;
-import be.dpa.bootiful.activities.sadp.jpa.entities.ActivityEntity;
-import be.dpa.bootiful.activities.sadp.jpa.entities.ParticipantEntity;
+import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
+import be.dpa.bootiful.activities.domain.spi.IActivityImportRepository;
+import be.dpa.bootiful.activities.infrastructure.bored.BoredActivityProvider;
+import be.dpa.bootiful.activities.infrastructure.jpa.IActivityEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.IActivityParticipantEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.IParticipantEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityEntity;
+import be.dpa.bootiful.activities.infrastructure.jpa.entities.ParticipantEntity;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.StringUtils;
