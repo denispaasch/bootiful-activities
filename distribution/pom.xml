@@ -13,32 +13,17 @@
 	<dependencies>
 		<dependency>
 			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>dm.api</artifactId>
+			<artifactId>domain</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>padp.rest</artifactId>
+			<artifactId>application</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>dm.impl</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>dm.spi</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>sadp.jpa</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>be.dpa.bootiful-activities</groupId>
-			<artifactId>sadp.bored</artifactId>
+			<artifactId>infrastructure</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

@@ -136,13 +136,9 @@
 	</dependencyManagement>
 
 	<modules>
-		<module>dm.api</module>
-		<module>padp.rest</module>
-		<module>dm.impl</module>
-		<module>dm.spi</module>
-		<module>sadp.jpa</module>
-		<module>sadp.bored</module>
-		<module>distribution</module>
+		<module>domain</module>
+		<module>application</module>
+		<module>infrastructure</module>
 	</modules>
 
 </project>
