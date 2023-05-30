@@ -1,17 +1,21 @@
 package be.dpa.bootiful.activities.infrastructure.bored;
 
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import java.io.IOException;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
+import java.security.cert.CertificateException;
 
 /**
  * Bored activity configuration.
@@ -21,37 +25,24 @@ import java.security.cert.X509Certificate;
 @Configuration
 public class BoredActivityConfiguration {
 
-    private void ignoreCertificates() {
-        // TODO: The certificate of the boredapi expired :/
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-
-            @Override
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-            }
-        } };
-
+    private SSLConnectionSocketFactory createSocketFactory() {
         try {
-            SSLContext sc = SSLContext.getInstance("TLS");
-            sc.init(null, trustAllCerts, new SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (KeyManagementException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
+            ClassPathResource resource = new ClassPathResource("/boredapi-truststore.jks");
+            SSLContext context = SSLContextBuilder.create()
+                    .loadTrustMaterial(resource.getURL(), "Panda1337!".toCharArray())
+                    .build();
+            return new SSLConnectionSocketFactory(context);
+        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+                 | KeyManagementException e) {
+            throw new IllegalStateException(e);
         }
-
     }
-
 
     @Bean
     public RestTemplate restTemplate() {
-        ignoreCertificates();
-        return new RestTemplate();
+        var socketFactory = createSocketFactory();
+        var client = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+        return new RestTemplateBuilder().requestFactory(() -> new HttpComponentsClientHttpRequestFactory(client))
+                .build();
     }
 }
