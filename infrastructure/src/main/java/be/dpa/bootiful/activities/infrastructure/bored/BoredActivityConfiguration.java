@@ -38,6 +38,11 @@ public class BoredActivityConfiguration {
         }
     }
 
+    /**
+     * Registers a rest template with a trust store to access the bored API.
+     *
+     * @return a rest template
+     */
     @Bean
     public RestTemplate restTemplate() {
         var socketFactory = createSocketFactory();
