@@ -3,6 +3,7 @@ package be.dpa.bootiful.activities.infrastructure.bored;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,11 +26,14 @@ import java.security.cert.CertificateException;
 @Configuration
 public class BoredActivityConfiguration {
 
+    @Value("${activity.truststore.password:}")
+    private String truststorePassword;
+
     private SSLConnectionSocketFactory createSocketFactory() {
         try {
             ClassPathResource resource = new ClassPathResource("/boredapi-truststore.jks");
             SSLContext context = SSLContextBuilder.create()
-                    .loadTrustMaterial(resource.getURL(), "Panda1337!".toCharArray())
+                    .loadTrustMaterial(resource.getURL(), truststorePassword.toCharArray())
                     .build();
             return new SSLConnectionSocketFactory(context);
         } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
