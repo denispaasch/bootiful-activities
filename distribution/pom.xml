@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-hal-explorer</artifactId>
-			<version>3.6.4</version>
+			<version>4.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>

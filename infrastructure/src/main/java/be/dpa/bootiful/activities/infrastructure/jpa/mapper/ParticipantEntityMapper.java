@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
  * Maps participant entities to participant records.
  */
 @Mapper(componentModel = "spring")
-public interface IParticipantEntityMapper {
+public interface ParticipantEntityMapper {
 
     ParticipantRecord toParticipantRecord(ParticipantEntity participantEntity);
 

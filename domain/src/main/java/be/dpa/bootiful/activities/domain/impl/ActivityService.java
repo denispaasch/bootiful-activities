@@ -2,16 +2,15 @@ package be.dpa.bootiful.activities.domain.impl;
 
 import be.dpa.bootiful.activities.domain.api.Activity;
 import be.dpa.bootiful.activities.domain.api.ActivityRequest;
-import be.dpa.bootiful.activities.domain.api.IActivityService;
 import be.dpa.bootiful.activities.domain.api.Participant;
 import be.dpa.bootiful.activities.domain.api.ParticipantRequest;
 import be.dpa.bootiful.activities.domain.api.exception.ActivityNotFoundException;
 import be.dpa.bootiful.activities.domain.api.exception.InvalidParticipantException;
 import be.dpa.bootiful.activities.domain.api.exception.ParticipantNotFoundException;
-import be.dpa.bootiful.activities.domain.impl.mapper.IActivityMapper;
-import be.dpa.bootiful.activities.domain.impl.mapper.IParticipantMapper;
+import be.dpa.bootiful.activities.domain.impl.mapper.ActivityMapper;
+import be.dpa.bootiful.activities.domain.impl.mapper.ParticipantMapper;
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
-import be.dpa.bootiful.activities.domain.spi.IActivityRepository;
+import be.dpa.bootiful.activities.domain.spi.ActivityRepository;
 import be.dpa.bootiful.activities.domain.spi.ParticipantRecord;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -29,13 +28,13 @@ import java.util.UUID;
  */
 @Service
 @RequiredArgsConstructor
-public class ActivityService implements IActivityService {
+public class ActivityService implements be.dpa.bootiful.activities.domain.api.ActivityService {
 
-    private final IActivityMapper activityMapper;
+    private final ActivityMapper activityMapper;
 
-    private final IParticipantMapper participantMapper;
+    private final ParticipantMapper participantMapper;
 
-    private final IActivityRepository activityRepository;
+    private final ActivityRepository activityRepository;
 
     @Override
     public Page<Activity> getActivities(Optional<String> search, int page, int size) {

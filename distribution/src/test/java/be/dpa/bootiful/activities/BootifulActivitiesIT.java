@@ -1,11 +1,11 @@
 package be.dpa.bootiful.activities;
 
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
-import be.dpa.bootiful.activities.domain.spi.IActivityImportRepository;
+import be.dpa.bootiful.activities.domain.spi.ActivityImportRepository;
 import be.dpa.bootiful.activities.infrastructure.bored.BoredActivityProvider;
-import be.dpa.bootiful.activities.infrastructure.jpa.IActivityEntityRepository;
-import be.dpa.bootiful.activities.infrastructure.jpa.IActivityParticipantEntityRepository;
-import be.dpa.bootiful.activities.infrastructure.jpa.IParticipantEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.ActivityEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.ActivityParticipantEntityRepository;
+import be.dpa.bootiful.activities.infrastructure.jpa.ParticipantEntityRepository;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ParticipantEntity;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,16 +59,16 @@ class BootifulActivitiesIT {
     private MockMvc mockMvc;
 
     @Autowired
-    private IActivityEntityRepository activityEntityRepository;
+    private ActivityEntityRepository activityEntityRepository;
 
     @Autowired
-    private IParticipantEntityRepository participantEntityRepository;
+    private ParticipantEntityRepository participantEntityRepository;
 
     @Autowired
-    private IActivityParticipantEntityRepository activityParticipantEntityRepository;
+    private ActivityParticipantEntityRepository activityParticipantEntityRepository;
 
     @Autowired
-    private IActivityImportRepository activityImportRepository;
+    private ActivityImportRepository activityImportRepository;
 
     @MockBean
     private BoredActivityProvider boredActivityProvider;

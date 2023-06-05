@@ -1,8 +1,10 @@
 package be.dpa.bootiful.activities.infrastructure.bored;
 
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactoryBuilder;
+import org.apache.hc.core5.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
@@ -29,14 +31,12 @@ public class BoredActivityConfiguration {
     @Value("${activity.truststore.password:}")
     private String truststorePassword;
 
-    private SSLConnectionSocketFactory createSocketFactory() {
+    private SSLContext createContext() {
+        ClassPathResource resource = new ClassPathResource("/boredapi-truststore.jks");
         try {
-            ClassPathResource resource = new ClassPathResource("/boredapi-truststore.jks");
-            SSLContext context = SSLContextBuilder.create()
-                    .loadTrustMaterial(resource.getURL(), truststorePassword.toCharArray())
-                    .build();
-            return new SSLConnectionSocketFactory(context);
-        } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException
+            return SSLContexts.custom().loadTrustMaterial(resource.getURL(),
+                    truststorePassword.toCharArray()).build();
+        } catch (NoSuchAlgorithmException | IOException | KeyStoreException | CertificateException
                  | KeyManagementException e) {
             throw new IllegalStateException(e);
         }
@@ -49,8 +49,14 @@ public class BoredActivityConfiguration {
      */
     @Bean
     public RestTemplate restTemplate() {
-        var socketFactory = createSocketFactory();
-        var client = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+        var socketFactory = createContext();
+        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
+                .setSSLSocketFactory(SSLConnectionSocketFactoryBuilder.create()
+                        .setSslContext(socketFactory)
+                        .build())
+                .build();
+
+        var client = HttpClients.custom().setConnectionManager(connectionManager).build();
         return new RestTemplateBuilder().requestFactory(() -> new HttpComponentsClientHttpRequestFactory(client))
                 .build();
     }

@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
  * @author denis
  */
 @Mapper(componentModel = "spring")
-public interface IParticipantMapper {
+public interface ParticipantMapper {
 
     Participant toParticipant(ParticipantRecord participantRecord);
 

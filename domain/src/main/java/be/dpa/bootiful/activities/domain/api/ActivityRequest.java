@@ -1,10 +1,11 @@
 package be.dpa.bootiful.activities.domain.api;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
+
 
 /**
  * Request to create or update an activity.

@@ -1,7 +1,7 @@
 package be.dpa.bootiful.activities.infrastructure.bored;
 
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
-import be.dpa.bootiful.activities.domain.spi.IActivityImportRepository;
+import be.dpa.bootiful.activities.domain.spi.ActivityImportRepository;
 import be.dpa.bootiful.activities.infrastructure.bored.mapper.IBoredActivityRecordMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class BoredActivityProvider {
 
     private final IBoredActivityRecordMapper boredActivityMapper;
 
-    private final IActivityImportRepository activityImportRepository;
+    private final ActivityImportRepository activityImportRepository;
 
     @Value("${activity.provider.url}")
     private String url;

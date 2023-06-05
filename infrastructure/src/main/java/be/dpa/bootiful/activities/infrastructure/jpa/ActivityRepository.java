@@ -1,14 +1,13 @@
 package be.dpa.bootiful.activities.infrastructure.jpa;
 
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
-import be.dpa.bootiful.activities.domain.spi.IActivityRepository;
 import be.dpa.bootiful.activities.domain.spi.ParticipantRecord;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityParticipantEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ParticipantEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.filter.CustomRsqlVisitor;
-import be.dpa.bootiful.activities.infrastructure.jpa.mapper.IActivityEntityMapper;
-import be.dpa.bootiful.activities.infrastructure.jpa.mapper.IParticipantEntityMapper;
+import be.dpa.bootiful.activities.infrastructure.jpa.mapper.ActivityEntityMapper;
+import be.dpa.bootiful.activities.infrastructure.jpa.mapper.ParticipantEntityMapper;
 import cz.jirutka.rsql.parser.RSQLParser;
 import cz.jirutka.rsql.parser.ast.Node;
 import lombok.RequiredArgsConstructor;
@@ -31,20 +30,20 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 @Repository
-public class ActivityRepository implements IActivityRepository {
+public class ActivityRepository implements be.dpa.bootiful.activities.domain.spi.ActivityRepository {
 
     private static final long ZERO_ROWS_AFFECTED = 0L;
-    private final IActivityEntityMapper activityEntityMapper;
+    private final ActivityEntityMapper activityEntityMapper;
 
-    private final IParticipantEntityMapper participantEntityMapper;
+    private final ParticipantEntityMapper participantEntityMapper;
 
-    private final IActivityEntityRepository activityEntityRepository;
+    private final ActivityEntityRepository activityEntityRepository;
 
-    private final IActivityParticipantEntityRepository activityParticipantEntityRepository;
+    private final ActivityParticipantEntityRepository activityParticipantEntityRepository;
 
     private final ActivityParticipantRepository activityParticipantRepository;
 
-    private final IParticipantEntityRepository participantEntityRepository;
+    private final ParticipantEntityRepository participantEntityRepository;
 
     private Page<ActivityEntity> doGetAll(Optional<String> search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);

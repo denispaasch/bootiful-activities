@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ActivityParticipantRepository {
 
-    private final IActivityParticipantEntityRepository activityParticipantEntityRepository;
+    private final ActivityParticipantEntityRepository activityParticipantEntityRepository;
 
     /**
      * Creates an assignment of a participant to an activity.

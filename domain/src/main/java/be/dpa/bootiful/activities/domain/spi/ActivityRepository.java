@@ -10,7 +10,7 @@ import java.util.Optional;
  *
  * @author denis
  */
-public interface IActivityRepository {
+public interface ActivityRepository {
 
     Page<ActivityRecord> getAll(Optional<String> search, int page, int size);
 

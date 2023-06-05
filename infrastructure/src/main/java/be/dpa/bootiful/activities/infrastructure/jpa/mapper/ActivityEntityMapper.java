@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
  * @author  denis
  */
 @Mapper(componentModel = "spring")
-public interface IActivityEntityMapper {
+public interface ActivityEntityMapper {
 
     @Mapping(target = "id", ignore = true)
     ActivityEntity toActivityEntity(ActivityRecord activity);

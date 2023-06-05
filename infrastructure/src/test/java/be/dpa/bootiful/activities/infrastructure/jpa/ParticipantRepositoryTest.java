@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class ParticipantRepositoryTest {
 
     @MockBean
-    private IParticipantEntityRepository participantEntityRepository;
+    private ParticipantEntityRepository participantEntityRepository;
 
     @Autowired
     private ParticipantRepository participantRepository;

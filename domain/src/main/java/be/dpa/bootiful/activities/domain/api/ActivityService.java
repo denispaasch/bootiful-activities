@@ -12,7 +12,7 @@ import java.util.Optional;
  *
  * @author denis
  */
-public interface IActivityService {
+public interface ActivityService {
 
     /**
      * Gets a list of activities.

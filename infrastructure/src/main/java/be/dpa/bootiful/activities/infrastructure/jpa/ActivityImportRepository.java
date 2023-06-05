@@ -1,11 +1,10 @@
 package be.dpa.bootiful.activities.infrastructure.jpa;
 
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
-import be.dpa.bootiful.activities.domain.spi.IActivityImportRepository;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ActivityParticipantEntity;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ParticipantEntity;
-import be.dpa.bootiful.activities.infrastructure.jpa.mapper.IActivityEntityMapper;
+import be.dpa.bootiful.activities.infrastructure.jpa.mapper.ActivityEntityMapper;
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.IteratorUtils;
@@ -26,15 +25,15 @@ import java.util.stream.Collectors;
  */
 @Repository
 @RequiredArgsConstructor
-public class ActivityImportRepository implements IActivityImportRepository {
+public class ActivityImportRepository implements be.dpa.bootiful.activities.domain.spi.ActivityImportRepository {
 
     private final Faker faker = new Faker(Locale.ENGLISH);
 
-    private final IActivityEntityMapper activityEntityMapper;
+    private final ActivityEntityMapper activityEntityMapper;
 
-    private final IActivityEntityRepository activityEntityRepository;
+    private final ActivityEntityRepository activityEntityRepository;
 
-    private final IParticipantEntityRepository participantRepository;
+    private final ParticipantEntityRepository participantRepository;
 
     private final ActivityParticipantRepository activityParticipantRepository;
 

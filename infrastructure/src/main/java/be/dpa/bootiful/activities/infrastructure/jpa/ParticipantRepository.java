@@ -1,9 +1,8 @@
 package be.dpa.bootiful.activities.infrastructure.jpa;
 
-import be.dpa.bootiful.activities.domain.spi.IParticipantRepository;
 import be.dpa.bootiful.activities.domain.spi.ParticipantRecord;
 import be.dpa.bootiful.activities.infrastructure.jpa.entities.ParticipantEntity;
-import be.dpa.bootiful.activities.infrastructure.jpa.mapper.IParticipantEntityMapper;
+import be.dpa.bootiful.activities.infrastructure.jpa.mapper.ParticipantEntityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,11 +17,11 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
  */
 @Repository
 @RequiredArgsConstructor
-public class ParticipantRepository implements IParticipantRepository {
+public class ParticipantRepository implements be.dpa.bootiful.activities.domain.spi.ParticipantRepository {
 
-    private final IParticipantEntityMapper participantEntityMapper;
+    private final ParticipantEntityMapper participantEntityMapper;
 
-    private final IParticipantEntityRepository participantEntityRepository;
+    private final ParticipantEntityRepository participantEntityRepository;
 
     @Override
     public Page<ParticipantRecord> getAll(int page, int size) {

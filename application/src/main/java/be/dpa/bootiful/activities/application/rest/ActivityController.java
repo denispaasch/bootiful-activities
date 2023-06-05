@@ -2,7 +2,7 @@ package be.dpa.bootiful.activities.application.rest;
 
 import be.dpa.bootiful.activities.domain.api.Activity;
 import be.dpa.bootiful.activities.domain.api.ActivityRequest;
-import be.dpa.bootiful.activities.domain.api.IActivityService;
+import be.dpa.bootiful.activities.domain.api.ActivityService;
 import be.dpa.bootiful.activities.domain.api.Participant;
 import be.dpa.bootiful.activities.domain.api.ParticipantRequest;
 import be.dpa.bootiful.activities.domain.api.exception.ActivityNotFoundException;
@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +56,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @Validated
 class ActivityController {
 
-    private final IActivityService activityService;
+    private final ActivityService activityService;
 
     private final RelationService relationService;
 

@@ -3,7 +3,7 @@ package be.dpa.bootiful.activities.application.rest;
 
 import be.dpa.bootiful.activities.domain.api.Activity;
 import be.dpa.bootiful.activities.domain.api.ActivityRequest;
-import be.dpa.bootiful.activities.domain.api.IActivityService;
+import be.dpa.bootiful.activities.domain.api.ActivityService;
 import be.dpa.bootiful.activities.domain.api.Participant;
 import be.dpa.bootiful.activities.domain.api.ParticipantRequest;
 import be.dpa.bootiful.activities.domain.api.exception.ActivityNotFoundException;
@@ -80,7 +80,7 @@ public class ActivityControllerTest {
     private Participant tomBolaParticipant;
 
     @MockBean
-    private IActivityService activityService;
+    private ActivityService activityService;
 
     @SpyBean
     private RelationService relationService;

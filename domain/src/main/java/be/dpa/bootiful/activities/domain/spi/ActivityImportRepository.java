@@ -5,7 +5,7 @@ package be.dpa.bootiful.activities.domain.spi;
  *
  * @author denis
  */
-public interface IActivityImportRepository {
+public interface ActivityImportRepository {
 
     /**
      * Imports the passed activity record.

@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
  *
  * @author denis
  */
-public interface IParticipantRepository {
+public interface ParticipantRepository {
 
     Page<ParticipantRecord> getAll(int page, int size);
 }

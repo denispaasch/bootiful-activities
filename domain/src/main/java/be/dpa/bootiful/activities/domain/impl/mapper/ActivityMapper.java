@@ -12,7 +12,7 @@ import org.mapstruct.Mapping;
  * @author denis
  */
 @Mapper(componentModel = "spring")
-public interface IActivityMapper {
+public interface ActivityMapper {
 
     Activity toActivityResponse(ActivityRecord activityRecord);
 

@@ -1,10 +1,9 @@
 package be.dpa.bootiful.activities.domain.impl;
 
 import be.dpa.bootiful.activities.domain.api.exception.ActivityNotFoundException;
-import be.dpa.bootiful.activities.domain.impl.ActivityService;
-import be.dpa.bootiful.activities.domain.impl.mapper.IActivityMapper;
-import be.dpa.bootiful.activities.domain.impl.mapper.IParticipantMapper;
-import be.dpa.bootiful.activities.domain.spi.IActivityRepository;
+import be.dpa.bootiful.activities.domain.impl.mapper.ActivityMapper;
+import be.dpa.bootiful.activities.domain.impl.mapper.ParticipantMapper;
+import be.dpa.bootiful.activities.domain.spi.ActivityRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +20,13 @@ public class ActivityServiceTest {
     private static final String AK_BIKE = "BIKE";
 
     @Mock
-    private IActivityMapper activityMapper;
+    private ActivityMapper activityMapper;
 
     @Mock
-    private IParticipantMapper participantMapper;
+    private ParticipantMapper participantMapper;
 
     @Mock
-    private IActivityRepository activityRepository;
+    private ActivityRepository activityRepository;
 
     @Test
     public void testDeleteActivity() throws ActivityNotFoundException {
