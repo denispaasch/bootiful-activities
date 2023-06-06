@@ -7,18 +7,10 @@ import lombok.Data;
  *
  * @author denis
  */
-@Data
-public class ActivityRecord {
+public record ActivityRecord(String alternateKey,
+                             String externalKey,
+                             String action,
+                             String type,
+                             int noOfParticipants,
+                             String details) {}
 
-    String alternateKey;
-
-    String externalKey;
-
-    String action;
-
-    String type;
-
-    int noOfParticipants;
-
-    String details;
-}

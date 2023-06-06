@@ -3,6 +3,7 @@ package be.dpa.bootiful.activities.domain.impl.mapper;
 import be.dpa.bootiful.activities.domain.api.Activity;
 import be.dpa.bootiful.activities.domain.api.ActivityRequest;
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -16,7 +17,7 @@ public interface ActivityMapper {
 
     Activity toActivityResponse(ActivityRecord activityRecord);
 
-    @Mapping(target = "alternateKey", ignore = true)
+    @Mapping(target = "alternateKey", expression = "java(alternateKey)")
     @Mapping(target = "externalKey", ignore = true)
-    ActivityRecord toActivityRecord(ActivityRequest activityRequest);
+    ActivityRecord toActivityRecord(ActivityRequest activityRequest, @Context String alternateKey);
 }

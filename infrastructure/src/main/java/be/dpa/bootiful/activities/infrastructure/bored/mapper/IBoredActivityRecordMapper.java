@@ -3,9 +3,12 @@ package be.dpa.bootiful.activities.infrastructure.bored.mapper;
 import be.dpa.bootiful.activities.domain.spi.ActivityRecord;
 import be.dpa.bootiful.activities.infrastructure.bored.BoredActivityRecord;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+import org.mapstruct.Qualifier;
 
 import java.util.UUID;
 
@@ -21,10 +24,7 @@ public interface IBoredActivityRecordMapper {
     @Mapping(source = "key", target = "externalKey")
     @Mapping(source = "participants", target = "noOfParticipants")
     @Mapping(source = "link", target = "details")
-    ActivityRecord toActivityRecord(BoredActivityRecord boredActivity);
+    @Mapping(target = "alternateKey", expression = "java(alternateKey)")
+    ActivityRecord toActivityRecord(BoredActivityRecord boredActivity, @Context String alternateKey);
 
-    @AfterMapping
-    default void appendAlternateKey(@MappingTarget ActivityRecord activityRecord) {
-        activityRecord.setAlternateKey(UUID.randomUUID().toString());
-    }
 }

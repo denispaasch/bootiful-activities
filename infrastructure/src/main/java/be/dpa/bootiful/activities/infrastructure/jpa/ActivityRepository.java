@@ -110,7 +110,7 @@ public class ActivityRepository implements be.dpa.bootiful.activities.domain.spi
     @Override
     public ActivityRecord save(ActivityRecord activity) {
         ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activity);
-        Optional<ActivityEntity> optExists = activityEntityRepository.findByAlternateKey(activity.getAlternateKey());
+        Optional<ActivityEntity> optExists = activityEntityRepository.findByAlternateKey(activity.alternateKey());
         optExists.ifPresent(a -> activityEntity.setId(a.getId()));
         return doSave(activityEntity);
     }

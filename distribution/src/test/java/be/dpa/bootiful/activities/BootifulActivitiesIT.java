@@ -208,7 +208,7 @@ class BootifulActivitiesIT {
         List<ActivityRecord> activityRecords =
                 generator.objects(ActivityRecord.class, 5).collect(Collectors.toList());
         Integer participantSum =
-                activityRecords.stream().map(ActivityRecord::getNoOfParticipants)
+                activityRecords.stream().map(ActivityRecord::noOfParticipants)
                         .collect(Collectors.summingInt(Integer::intValue));
         activityRecords.forEach(activityImportRepository::importActivity);
 

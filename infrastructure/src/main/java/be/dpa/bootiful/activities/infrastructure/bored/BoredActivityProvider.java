@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 /**
@@ -39,8 +40,9 @@ public class BoredActivityProvider {
 
     private void fetch(int fetchIx) {
         ResponseEntity<BoredActivityRecord> responseEntity = restTemplate.getForEntity(url, BoredActivityRecord.class);
-        ActivityRecord activity = boredActivityMapper.toActivityRecord(responseEntity.getBody());
-        log.info("Importing bored activity with type '{}' and action '{}'", activity.getType(), activity.getAction());
+        ActivityRecord activity = boredActivityMapper.toActivityRecord(responseEntity.getBody(),
+                UUID.randomUUID().toString());
+        log.info("Importing bored activity with type '{}' and action '{}'", activity.type(), activity.action());
         activityImportRepository.importActivity(activity);
     }
 

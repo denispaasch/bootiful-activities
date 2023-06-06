@@ -68,7 +68,7 @@ public class ActivityImportRepository implements be.dpa.bootiful.activities.doma
     public void importActivity(ActivityRecord activityRecord) {
         ActivityEntity activityEntity = activityEntityMapper.toActivityEntity(activityRecord);
         Optional<ActivityEntity> optExists = activityEntityRepository
-                .findByExternalKey(activityRecord.getExternalKey());
+                .findByExternalKey(activityRecord.externalKey());
         if (!optExists.isPresent()) {
             createParticipants(activityEntityRepository.save(activityEntity));
         }

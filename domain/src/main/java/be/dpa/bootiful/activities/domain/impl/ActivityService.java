@@ -60,8 +60,7 @@ public class ActivityService implements be.dpa.bootiful.activities.domain.api.Ac
     }
 
     private Activity save(String alternateKey, ActivityRequest activityRequest) {
-        ActivityRecord activityRecord = activityMapper.toActivityRecord(activityRequest);
-        activityRecord.setAlternateKey(alternateKey);
+        ActivityRecord activityRecord = activityMapper.toActivityRecord(activityRequest, alternateKey);
         return activityMapper.toActivityResponse(activityRepository.save(activityRecord));
     }
 
