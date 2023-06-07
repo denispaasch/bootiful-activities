@@ -85,10 +85,9 @@ public class ActivityService implements be.dpa.bootiful.activities.domain.api.Ac
 
     private boolean participantExists(List<ParticipantRecord> activityParticipants,
                                       ParticipantRequest participantRequest) {
-        return activityParticipants.stream().filter(activityParticipant ->
+        return activityParticipants.stream().anyMatch(activityParticipant ->
                 StringUtils.equals(activityParticipant.firstName(), participantRequest.getFirstName())
-                && StringUtils.equals(activityParticipant.lastName(), participantRequest.getLastName()))
-                .findAny().isPresent();
+                && StringUtils.equals(activityParticipant.lastName(), participantRequest.getLastName()));
     }
 
     private void validateActivity(String activityAk) throws ActivityNotFoundException {
