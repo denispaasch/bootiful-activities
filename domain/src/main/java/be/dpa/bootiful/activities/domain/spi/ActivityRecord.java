@@ -1,7 +1,5 @@
 package be.dpa.bootiful.activities.domain.spi;
 
-import lombok.Data;
-
 /**
  * An activity record.
  *

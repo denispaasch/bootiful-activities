@@ -7,12 +7,7 @@ import lombok.Data;
  *
  * @author denis
  */
-@Data
-public class ParticipantRecord {
-
-    String alternateKey;
-
-    String firstName;
-
-    String lastName;
-}
+public record ParticipantRecord(
+    String alternateKey,
+    String firstName,
+    String lastName) {}

@@ -86,8 +86,8 @@ public class ActivityService implements be.dpa.bootiful.activities.domain.api.Ac
     private boolean participantExists(List<ParticipantRecord> activityParticipants,
                                       ParticipantRequest participantRequest) {
         return activityParticipants.stream().filter(activityParticipant ->
-                StringUtils.equals(activityParticipant.getFirstName(), participantRequest.getFirstName())
-                && StringUtils.equals(activityParticipant.getLastName(), participantRequest.getLastName()))
+                StringUtils.equals(activityParticipant.firstName(), participantRequest.getFirstName())
+                && StringUtils.equals(activityParticipant.lastName(), participantRequest.getLastName()))
                 .findAny().isPresent();
     }
 
@@ -119,7 +119,7 @@ public class ActivityService implements be.dpa.bootiful.activities.domain.api.Ac
         validateActivity(activityAk);
         List<ParticipantRecord> participants = activityRepository.getParticipantsBy(activityAk);
         Optional<ParticipantRecord> participantRecord =
-                participants.stream().filter(p -> StringUtils.equals(p.getAlternateKey(), participantAk)).findFirst();
+                participants.stream().filter(p -> StringUtils.equals(p.alternateKey(), participantAk)).findFirst();
         if (!participantRecord.isPresent()) {
             throw new ParticipantNotFoundException(
                     String.format("Could not find participant for alternate key %s", participantAk));
