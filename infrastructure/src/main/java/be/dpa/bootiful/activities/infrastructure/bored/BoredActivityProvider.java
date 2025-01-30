@@ -38,6 +38,9 @@ public class BoredActivityProvider {
     @Value("${activity.provider.fetch:10}")
     private int fetchAmount;
 
+    @Value("${activity.provider.enabled:true}")
+    private boolean fetchEnabled;
+
     private void fetch(int fetchIx) {
         ResponseEntity<BoredActivityRecord> responseEntity = restTemplate.getForEntity(url, BoredActivityRecord.class);
         ActivityRecord activity = boredActivityMapper.toActivityRecord(responseEntity.getBody(),
@@ -46,8 +49,20 @@ public class BoredActivityProvider {
         activityImportRepository.importActivity(activity);
     }
 
+    /**
+     * Asynchronously fetches a specified number of activities from an external provider and processes them.
+     * Each activity is retrieved using the configured URL, mapped to an activity record, and then imported
+     * via the activity import repository. The number of activities to fetch and whether this operation
+     * is enabled is determined by configurable properties.
+     * <ul>
+     *   <li>If the `fetchEnabled` flag is false, the fetch operation does not execute.</li>
+     *   <li>The number of activities to fetch is determined by the `fetchAmount` property.</li>
+     * </ul>
+     */
     @Async
     public void fetch() {
-        IntStream.range(0, fetchAmount).forEach(this::fetch);
+        if (fetchEnabled) {
+            IntStream.range(0, fetchAmount).forEach(this::fetch);
+        }
     }
 }
