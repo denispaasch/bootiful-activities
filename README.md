@@ -34,4 +34,26 @@ After the build there is a report within target/site/jacoco.
 
 http://localhost:8080/h2-console
 
+# Added GraalVM support
+
+You will need [sdkman](https://sdkman.io):
+
+```
+sdk install java 23.1.5.r21-nik
+sdk use java 23.1.5.r21-nik
+```
+Switch to the distribution folder:
+```
+cd distribution
+```
+Then you can build with:
+```
+mvn clean native:compile -Pnative
+```
+Finally start the native executable:
+```
+target/distribution
+```
+
+
 
